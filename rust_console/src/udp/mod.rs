@@ -20,6 +20,6 @@ impl UDPdata {
     }
 
     pub fn udp_close() {
-
+        UDPdata::udp_tx.send(0).unwrap();
     }
 }

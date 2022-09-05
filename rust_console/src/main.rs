@@ -1,4 +1,6 @@
 
+use std::time::Duration;
+
 use crate::udp::udp_reader;
 use crate::udp::udp_writer;
 
@@ -12,4 +14,6 @@ fn main() {
     udp_reader::udp_reader_ann();
     udp::UDPdata::udp_init();
     udp_writer::udp_writer_ann();
+    thread::sleep(Duration::from_millis(5000));
+    udp::UDPdata::udp_close();
 }

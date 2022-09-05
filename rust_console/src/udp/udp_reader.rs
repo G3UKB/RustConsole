@@ -13,5 +13,13 @@ pub fn reader_start(udp_rx : Receiver<i32>) {
 }
 
 pub fn reader_run(udp_rx : Receiver<i32>) {
-    println!("UDP Reader thread");
+    for i in 1..5 {
+        println!("Number {} from the reader thread!", i);
+        thread::sleep(Duration::from_millis(1000));
+       let r = udp_rx.try_recv();
+       let res = match r {
+        Ok(file) => break,
+        Err(error) => continue,
+       };
+    }
 }
