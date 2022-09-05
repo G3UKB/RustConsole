@@ -9,10 +9,10 @@ pub mod udp;
 fn main() {
     println!("Console main!");
 
-    let (udp_tx, udp_rx) = mpsc::channel();
+    //let (udp_tx, udp_rx) = mpsc::channel();
 
-    udp::udp_ann();
+    udp::UDPdata::udp_ann();
     udp_reader::udp_reader_ann();
-    udp_reader::reader_start(udp_rx);
+    udp::UDPdata::udp_init();
     udp_writer::udp_writer_ann();
 }
