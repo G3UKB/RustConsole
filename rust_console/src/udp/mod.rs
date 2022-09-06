@@ -1,5 +1,6 @@
 use crossbeam_channel::unbounded;
 
+pub mod udp_socket;
 pub mod udp_reader;
 pub mod udp_writer;
 
@@ -19,6 +20,9 @@ impl UDPdata {
 
     pub fn udp_ann() {
         println!("UDP Module");
+        udp_socket::udp_socket_ann();
+        udp_reader::udp_reader_ann();
+        udp_writer::udp_writer_ann();
     }
 
     pub fn udp_init(&mut self) {

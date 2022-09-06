@@ -13,14 +13,16 @@ pub fn reader_start(receiver : crossbeam_channel::Receiver<i32>) {
 }
 
 pub fn reader_run(receiver : crossbeam_channel::Receiver<i32>) {
-    for i in 1..5 {
-        println!("Number {} from the reader thread!", i);
-        thread::sleep(Duration::from_millis(1000));
-        //receiver.recv();
+    loop {
+        //println!("Number {} from the reader thread!", i);
+        thread::sleep(Duration::from_millis(100));
+        // Check for termination code
         let r = receiver.try_recv();
         let res = match r {
             Ok(file) => break,
             Err(error) => continue,
         };
+
+        // Perform read data
     }
 }
