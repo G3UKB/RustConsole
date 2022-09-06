@@ -16,9 +16,11 @@ pub fn reader_run(receiver : crossbeam_channel::Receiver<i32>) {
     for i in 1..5 {
         println!("Number {} from the reader thread!", i);
         thread::sleep(Duration::from_millis(1000));
-       //let r = .try_recv();
-       //let res = match r {
-        //Ok(file) => break,
-        //Err(error) => continue,
+        //receiver.recv();
+        let r = receiver.try_recv();
+        let res = match r {
+            Ok(file) => break,
+            Err(error) => continue,
+        };
     }
 }
