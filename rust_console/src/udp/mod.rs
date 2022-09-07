@@ -1,4 +1,5 @@
 use crossbeam_channel::unbounded;
+use std::net::UdpSocket;
 
 pub mod udp_socket;
 pub mod udp_reader;
@@ -26,6 +27,8 @@ impl UDPdata {
     }
 
     pub fn udp_init(&mut self) {
+        let sock = udp_socket::udp_open_bc_socket();
+        udp_socket::udp_revert_socket(sock);
         udp_reader::reader_start(self.receiver.clone());
     }
 
