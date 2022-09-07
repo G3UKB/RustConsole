@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 crossbeam-channel = "0.5"
 get_if_addrs = "0.5.3"
+socket2 = "0.4.7"
