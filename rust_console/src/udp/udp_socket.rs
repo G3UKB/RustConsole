@@ -4,23 +4,16 @@
     use get_if_addrs;
     use socket2;
 
-    struct Sockdata{
+    pub struct Sockdata{
         sock : UdpSocket,
         sock2 : socket2::Socket,
     }
     
     impl Sockdata {
         pub fn new() -> Sockdata {
-            //let lsock = Self::udp_open_bc_socket();
-
-            //let lsock = UdpSocket::bind(Self::get_ip() + ":" + "10000").expect("couldn't bind to address");
-            //lsock.set_broadcast(true).expect("set_broadcast call failed");
-            //lsock.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
-
-            //let lsock2 = socket2::Socket::from (lsock);
             Sockdata {  
                 sock : Self::udp_open_bc_socket(),
-                sock2 : socket2::Socket::from (Self::sock),
+                sock2 : socket2::Socket::from (sock),
             }
         }
 
