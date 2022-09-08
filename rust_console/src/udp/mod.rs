@@ -21,14 +21,14 @@ impl UDPdata {
 
     pub fn udp_ann() {
         println!("UDP Module");
-        udp_socket::udp_socket_ann();
+        //udp_socket::udp_socket_ann();
         udp_reader::udp_reader_ann();
         udp_writer::udp_writer_ann();
     }
 
     pub fn udp_init(&mut self) {
-        let sock = udp_socket::udp_open_bc_socket();
-        udp_socket::udp_revert_socket(sock);
+        let mut i_socket = udp_socket::Sockdata::new();
+        //udp_socket::udp_revert_socket(&mut i_socket);
         udp_reader::reader_start(self.receiver.clone());
     }
 
