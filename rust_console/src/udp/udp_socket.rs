@@ -5,14 +5,14 @@
     use socket2;
 
     pub struct Sockdata{
-        sock : UdpSocket,
         sock2 : socket2::Socket,
     }
     
     impl Sockdata {
         pub fn new() -> Sockdata {
+            let sock = Self::udp_open_bc_socket();
             Sockdata {  
-                sock : Self::udp_open_bc_socket(),
+                ///sock : Self::udp_open_bc_socket(),
                 sock2 : socket2::Socket::from (sock),
             }
         }
@@ -29,8 +29,8 @@
         }
 
         pub fn udp_revert_socket(&mut self) {
-            self.sock.set_broadcast(false).expect("set_broadcast call failed");
-            self.sock.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
+            self.sock2.set_broadcast(false).expect("set_broadcast call failed");
+            self.sock2.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
             // Set buffer sizes?
             self.sock2.set_recv_buffer_size(192000);
             self.sock2.set_send_buffer_size(192000);
