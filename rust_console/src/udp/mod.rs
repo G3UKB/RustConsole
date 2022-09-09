@@ -1,5 +1,5 @@
 use crossbeam_channel::unbounded;
-use std::net::UdpSocket;
+use socket2;
 
 pub mod udp_socket;
 pub mod udp_reader;
@@ -19,17 +19,20 @@ impl UDPdata {
         }
     }
 
-    pub fn udp_ann() {
+    pub fn udp_ann(&mut self) {
         println!("UDP Module");
-        //udp_socket::udp_socket_ann();
+        
         udp_reader::udp_reader_ann();
         udp_writer::udp_writer_ann();
     }
 
     pub fn udp_init(&mut self) {
         let mut i_socket = udp_socket::Sockdata::new();
-        //udp_socket::udp_revert_socket(&mut i_socket);
-        udp_reader::reader_start(self.receiver.clone());
+        i_socket.udp_socket_ann();
+        i_socket.udp_revert_socket();
+        let p_sock = i_socket.udp_sock_ref();
+
+        udp_reader::reader_start(self.receiver.clone(), p_sock);
     }
 
     pub fn udp_close(&mut self) {

@@ -17,15 +17,8 @@
             }
         }
 
-        pub fn udp_socket_ann() {
+        pub fn udp_socket_ann(&mut self) {
             println!("UDP Socket");
-        }
-
-        fn udp_open_bc_socket() -> UdpSocket {
-            let sock = UdpSocket::bind(Self::get_ip() + ":" + "10000").expect("couldn't bind to address");
-            sock.set_broadcast(true).expect("set_broadcast call failed");
-            sock.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
-            return sock
         }
 
         pub fn udp_revert_socket(&mut self) {
@@ -34,6 +27,17 @@
             // Set buffer sizes?
             self.sock2.set_recv_buffer_size(192000);
             self.sock2.set_send_buffer_size(192000);
+        }
+
+        pub fn udp_sock_ref(&mut self) -> &socket2::Socket {
+            return &self.sock2;
+        }
+
+        fn udp_open_bc_socket() -> UdpSocket {
+            let sock = UdpSocket::bind(Self::get_ip() + ":" + "10000").expect("couldn't bind to address");
+            sock.set_broadcast(true).expect("set_broadcast call failed");
+            sock.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
+            return sock
         }
 
         fn get_ip() -> String{
