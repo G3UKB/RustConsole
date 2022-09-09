@@ -1,19 +1,20 @@
 
     use std::net::UdpSocket;
     use std::time::Duration;
+    use std::sync::Arc;
+
     use get_if_addrs;
     use socket2;
 
     pub struct Sockdata{
-        sock2 : socket2::Socket,
+        sock2 : Arc<socket2::Socket>,
     }
     
     impl Sockdata {
         pub fn new() -> Sockdata {
             let sock = Self::udp_open_bc_socket();
             Sockdata {  
-                ///sock : Self::udp_open_bc_socket(),
-                sock2 : socket2::Socket::from (sock),
+                sock2 : Arc::new(socket2::Socket::from (sock)),
             }
         }
 
