@@ -30,8 +30,8 @@
             self.sock2.set_send_buffer_size(192000);
         }
 
-        pub fn udp_sock_ref(&mut self) -> &socket2::Socket {
-            return &self.sock2;
+        pub fn udp_sock_ref(&mut self) -> Arc<socket2::Socket> {
+            return self.sock2.clone();
         }
 
         fn udp_open_bc_socket() -> UdpSocket {

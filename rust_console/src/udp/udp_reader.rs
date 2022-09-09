@@ -10,8 +10,9 @@ pub fn udp_reader_ann() {
 }
 
 pub fn reader_start(receiver : crossbeam_channel::Receiver<i32>, p_sock : Arc<socket2::Socket>) {
+    let arc = Arc::new(p_sock);
     thread::spawn(  move || {
-        reader_run(receiver, &p_sock);
+        reader_run(receiver, &*arc);
     });
 }
 
