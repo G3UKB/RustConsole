@@ -35,7 +35,7 @@ bob@bobcowdery.plus.com
     pub struct Sockdata{
         sock2 : Arc<socket2::Socket>,
     }
-
+/*
     pub fn udp_sock_ann() {
         println!("UDP Socket");
     }
@@ -71,8 +71,8 @@ bob@bobcowdery.plus.com
         let iface = get_if_addrs::get_if_addrs().unwrap();
         return iface[0].ip().to_string();
     }
-
- /* 
+*/
+  
     impl Sockdata {
         pub fn new() -> Sockdata {
             let sock = Self::udp_open_bc_socket();
@@ -109,5 +109,3 @@ bob@bobcowdery.plus.com
             return iface[0].ip().to_string();
         }
     }
-
-*/
