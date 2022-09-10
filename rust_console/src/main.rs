@@ -29,13 +29,20 @@ use std::time::Duration;
 
 pub mod udp;
 
+/// Entry point for RustConsole SDR application
+///
+/// # Examples
+///
 fn main() {
-    println!("Console main!");
+    println!("Starting RustConsole...");
 
-    //udp::UDPdata::udp_ann();
+    // Create an instance of the UDPdata type
     let mut i_udp = udp::UDPdata::new();
+    // Announce udp module and initialise it
     i_udp.udp_ann();
-    i_udp.udp_init();
+    i_udp.udp_init();   // This will run the reader and writer threads
+
+    // Temporary code to wait a while then close everything and exit
     thread::sleep(Duration::from_millis(5000));
     udp::UDPdata::udp_close(&mut i_udp);
     thread::sleep(Duration::from_millis(1000));
