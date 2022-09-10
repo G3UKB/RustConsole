@@ -36,14 +36,30 @@ bob@bobcowdery.plus.com
         sock2 : Arc<socket2::Socket>,
     }
 
-    pub fn init() {
-        let sock = udp_open_bc_socket();  
+    pub fn udp_sock_ann() {
+        println!("UDP Socket");
+    }
+
+    pub fn udp_sock_init() {
+        let sock = udp_open_bc_sock();  
         let sock_data = Sockdata { 
             sock2 : Arc::new(socket2::Socket::from (sock)),
         };
     }
     
-    fn udp_open_bc_socket() -> UdpSocket {
+    pub fn udp_sock_ref() -> Arc<socket2::Socket> {
+        return sock2.clone();
+    }
+
+    pub fn udp_revert_sock() {
+        sock2.set_broadcast(false).expect("set_broadcast call failed");
+        sock2.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
+        // Set buffer sizes?
+        sock2.set_recv_buffer_size(192000).expect("set_recv_buffer_size call failed");
+        sock2.set_send_buffer_size(192000).expect("set_send_buffer_size call failed");
+    }
+
+    fn udp_open_bc_sock() -> UdpSocket {
         let sock = UdpSocket::bind(get_ip() + ":" + "10000").expect("couldn't bind to address");
         sock.set_broadcast(true).expect("set_broadcast call failed");
         sock.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");

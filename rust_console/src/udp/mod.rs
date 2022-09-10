@@ -56,10 +56,14 @@ impl UDPdata {
     }
 
     pub fn udp_init(&mut self) {
-        let mut i_socket = udp_socket::Sockdata::new();
-        i_socket.udp_socket_ann();
-        i_socket.udp_revert_socket();
-        let p_sock = i_socket.udp_sock_ref();
+        //let mut i_socket = udp_socket::Sockdata::new();
+        //i_socket.udp_socket_ann();
+        //i_socket.udp_revert_socket();
+        //let p_sock = i_socket.udp_sock_ref();
+        udp_socket::init();
+        udp_socket::udp_sock_ann();
+        udp_socket::udp_revert_sock();
+        let p_sock = udp_socket::udp_sock_ref();
 
         udp_reader::udp_reader_ann();
         let arc = p_sock.clone();
