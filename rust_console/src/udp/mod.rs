@@ -1,30 +1,57 @@
-use std::sync::Arc;
+/*
+mod.rs
+
+Module - udp
+Module udp manages udp_socket, udp_reader, udp_writer modules
+
+Copyright (C) 2022 by G3UKB Bob Cowdery
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+The authors can be reached by email at:
+
+bob@bobcowdery.plus.com
+*/
 
 use crossbeam_channel::unbounded;
-use socket2;
 
 pub mod udp_socket;
 pub mod udp_reader;
 pub mod udp_writer;
 
 pub struct UDPdata{
-    pub sender : crossbeam_channel::Sender<i32>,
-    pub receiver : crossbeam_channel::Receiver<i32>,
+    pub r_sender : crossbeam_channel::Sender<i32>,
+    pub r_receiver : crossbeam_channel::Receiver<i32>,
+    pub w_sender : crossbeam_channel::Sender<i32>,
+    pub w_receiver : crossbeam_channel::Receiver<i32>,
 }
 
 impl UDPdata {
     pub fn new() -> UDPdata {
-        let (s, r) = unbounded();
+        let (r_s, r_r) = unbounded();
+        let (w_s, w_r) = unbounded();
         UDPdata {  
-            sender : s,
-            receiver : r,
+            r_sender : r_s,
+            r_receiver : r_r,
+            w_sender : w_s,
+            w_receiver : w_r,
         }
     }
 
     pub fn udp_ann(&mut self) {
-        println!("UDP Module");
-        
-        udp_reader::udp_reader_ann();
+        println!("UDP Module");     
         udp_writer::udp_writer_ann();
     }
 
@@ -34,10 +61,17 @@ impl UDPdata {
         i_socket.udp_revert_socket();
         let p_sock = i_socket.udp_sock_ref();
 
-        udp_reader::reader_start(self.receiver.clone(), p_sock);
+        udp_reader::udp_reader_ann();
+        let arc = p_sock.clone();
+        udp_reader::reader_start(self.r_receiver.clone(), arc);
+
+        udp_writer::udp_writer_ann();
+        let arc1 = p_sock.clone();
+        udp_writer::writer_start(self.w_receiver.clone(), arc1);
     }
 
     pub fn udp_close(&mut self) {
-        self.sender.send(0).unwrap();
+        self.r_sender.send(0).unwrap();
+        self.w_sender.send(0).unwrap();
     }
 }
