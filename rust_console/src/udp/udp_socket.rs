@@ -40,23 +40,24 @@ bob@bobcowdery.plus.com
         println!("UDP Socket");
     }
 
-    pub fn udp_sock_init() {
+    pub fn udp_sock_init() -> Sockdata {
         let sock = udp_open_bc_sock();  
         let sock_data = Sockdata { 
             sock2 : Arc::new(socket2::Socket::from (sock)),
         };
+        return sock_data;
     }
     
-    pub fn udp_sock_ref() -> Arc<socket2::Socket> {
-        return sock2.clone();
+    pub fn udp_sock_ref(data : Sockdata) -> Arc<socket2::Socket> {
+        return data.sock2.clone();
     }
 
-    pub fn udp_revert_sock() {
-        sock2.set_broadcast(false).expect("set_broadcast call failed");
-        sock2.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
+    pub fn udp_revert_sock(data : Sockdata) {
+        data.sock2.set_broadcast(false).expect("set_broadcast call failed");
+        data.sock2.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
         // Set buffer sizes?
-        sock2.set_recv_buffer_size(192000).expect("set_recv_buffer_size call failed");
-        sock2.set_send_buffer_size(192000).expect("set_send_buffer_size call failed");
+        data.sock2.set_recv_buffer_size(192000).expect("set_recv_buffer_size call failed");
+        data.sock2.set_send_buffer_size(192000).expect("set_send_buffer_size call failed");
     }
 
     fn udp_open_bc_sock() -> UdpSocket {
