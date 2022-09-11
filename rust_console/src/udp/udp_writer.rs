@@ -30,20 +30,26 @@ use std::time::Duration;
 use socket2;
 use std::sync::Arc;
 
-pub fn writer_start(receiver : crossbeam_channel::Receiver<i32>, p_sock : Arc<socket2::Socket>) {
+use crate::common;
+
+pub fn writer_start(receiver : crossbeam_channel::Receiver<common::UDPMessages>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
         writer_run(receiver, &p_sock);
     });
 }
 
-pub fn writer_run(receiver : crossbeam_channel::Receiver<i32>, p_sock : &socket2::Socket) {
+pub fn writer_run(receiver : crossbeam_channel::Receiver<common::UDPMessages>, p_sock : &socket2::Socket) {
     println!("UDP Writer running");
     loop {
         thread::sleep(Duration::from_millis(100));
         // Check for termination code
         let r = receiver.try_recv();
-        let _res = match r {
-            Ok(_file) => break,
+        match r {
+            Ok(file) => {
+                match file {
+                    common::UDPMessages::Terminate => break,
+                };
+            },
             Err(_error) => continue,
         };
 

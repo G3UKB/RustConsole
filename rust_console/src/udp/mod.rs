@@ -25,20 +25,22 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use crossbeam_channel::unbounded;
 
 pub mod udp_socket;
 pub mod udp_reader;
 pub mod udp_writer;
 pub mod hw_control;
 
+use crate::common;
+use crossbeam_channel::unbounded;
+
 pub struct UDPdata{
-    pub r_sender : crossbeam_channel::Sender<i32>,
-    pub r_receiver : crossbeam_channel::Receiver<i32>,
-    pub w_sender : crossbeam_channel::Sender<i32>,
-    pub w_receiver : crossbeam_channel::Receiver<i32>,
-    pub hw_sender : crossbeam_channel::Sender<i32>,
-    pub hw_receiver : crossbeam_channel::Receiver<i32>,
+    pub r_sender : crossbeam_channel::Sender<common::UDPMessages>,
+    pub r_receiver : crossbeam_channel::Receiver<common::UDPMessages>,
+    pub w_sender : crossbeam_channel::Sender<common::UDPMessages>,
+    pub w_receiver : crossbeam_channel::Receiver<common::UDPMessages>,
+    pub hw_sender : crossbeam_channel::Sender<common::UDPMessages>,
+    pub hw_receiver : crossbeam_channel::Receiver<common::UDPMessages>,
 }
 
 impl UDPdata {
@@ -73,8 +75,8 @@ impl UDPdata {
     }
 
     pub fn udp_close(&mut self) {
-        self.r_sender.send(0).unwrap();
-        self.w_sender.send(0).unwrap();
-        self.hw_sender.send(0).unwrap();
+        self.r_sender.send(common::UDPMessages::Terminate).unwrap();
+        self.w_sender.send(common::UDPMessages::Terminate).unwrap();
+        self.hw_sender.send(common::UDPMessages::Terminate).unwrap();
     }
 }
