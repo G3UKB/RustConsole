@@ -32,13 +32,13 @@ use std::sync::Arc;
 
 use crate::common;
 
-pub fn reader_start(receiver : crossbeam_channel::Receiver<common::UDPMessages>, p_sock : Arc<socket2::Socket>) {
+pub fn reader_start(receiver : crossbeam_channel::Receiver<common::ReaderMsg>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
         reader_run(receiver, &p_sock);
     });
 }
 
-pub fn reader_run(receiver : crossbeam_channel::Receiver<common::UDPMessages>, p_sock : &socket2::Socket) {
+pub fn reader_run(receiver : crossbeam_channel::Receiver<common::ReaderMsg>, p_sock : &socket2::Socket) {
     println!("UDP Reader running");
     loop {
         thread::sleep(Duration::from_millis(100));
@@ -47,7 +47,7 @@ pub fn reader_run(receiver : crossbeam_channel::Receiver<common::UDPMessages>, p
         match r {
             Ok(file) => {
                 match file {
-                    common::UDPMessages::Terminate => break,
+                    common::ReaderMsg::Terminate => break,
                 };
             },
             Err(_error) => continue,

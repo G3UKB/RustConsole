@@ -32,13 +32,13 @@ use std::sync::Arc;
 
 use crate::common;
 
-pub fn writer_start(receiver : crossbeam_channel::Receiver<common::UDPMessages>, p_sock : Arc<socket2::Socket>) {
+pub fn writer_start(receiver : crossbeam_channel::Receiver<common::WriterMsg>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
         writer_run(receiver, &p_sock);
     });
 }
 
-pub fn writer_run(receiver : crossbeam_channel::Receiver<common::UDPMessages>, p_sock : &socket2::Socket) {
+pub fn writer_run(receiver : crossbeam_channel::Receiver<common::WriterMsg>, p_sock : &socket2::Socket) {
     println!("UDP Writer running");
     loop {
         thread::sleep(Duration::from_millis(100));
@@ -47,7 +47,7 @@ pub fn writer_run(receiver : crossbeam_channel::Receiver<common::UDPMessages>, p
         match r {
             Ok(file) => {
                 match file {
-                    common::UDPMessages::Terminate => break,
+                    common::WriterMsg::Terminate => break,
                 };
             },
             Err(_error) => continue,

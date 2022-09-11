@@ -35,12 +35,12 @@ use crate::common;
 use crossbeam_channel::unbounded;
 
 pub struct UDPdata{
-    pub r_sender : crossbeam_channel::Sender<common::UDPMessages>,
-    pub r_receiver : crossbeam_channel::Receiver<common::UDPMessages>,
-    pub w_sender : crossbeam_channel::Sender<common::UDPMessages>,
-    pub w_receiver : crossbeam_channel::Receiver<common::UDPMessages>,
-    pub hw_sender : crossbeam_channel::Sender<common::UDPMessages>,
-    pub hw_receiver : crossbeam_channel::Receiver<common::UDPMessages>,
+    pub r_sender : crossbeam_channel::Sender<common::ReaderMsg>,
+    pub r_receiver : crossbeam_channel::Receiver<common::ReaderMsg>,
+    pub w_sender : crossbeam_channel::Sender<common::WriterMsg>,
+    pub w_receiver : crossbeam_channel::Receiver<common::WriterMsg>,
+    pub hw_sender : crossbeam_channel::Sender<common::HWMsg>,
+    pub hw_receiver : crossbeam_channel::Receiver<common::HWMsg>,
 }
 
 impl UDPdata {
@@ -72,11 +72,16 @@ impl UDPdata {
 
         let arc2 = p_sock.clone();
         hw_control::hw_control_start(self.hw_receiver.clone(), arc2);
+
+        // Test
+        self.hw_sender.send(common::HWMsg::Discover_HW).unwrap();
+        self.hw_sender.send(common::HWMsg::Start_HW).unwrap();
+        self.hw_sender.send(common::HWMsg::Stop_HW).unwrap();
     }
 
     pub fn udp_close(&mut self) {
-        self.r_sender.send(common::UDPMessages::Terminate).unwrap();
-        self.w_sender.send(common::UDPMessages::Terminate).unwrap();
-        self.hw_sender.send(common::UDPMessages::Terminate).unwrap();
+        self.r_sender.send(common::ReaderMsg::Terminate).unwrap();
+        self.w_sender.send(common::WriterMsg::Terminate).unwrap();
+        self.hw_sender.send(common::HWMsg::Terminate).unwrap();
     }
 }

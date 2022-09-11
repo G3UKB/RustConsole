@@ -24,6 +24,17 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-pub enum UDPMessages {
+pub enum ReaderMsg {
     Terminate,
+}
+
+pub enum WriterMsg {
+    Terminate,
+}
+
+pub enum HWMsg {
+    Terminate,
+    Discover_HW,
+    Start_HW,
+    Stop_HW,
 }
