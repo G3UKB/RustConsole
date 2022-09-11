@@ -27,6 +27,7 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use socket2;
 use std::sync::Arc;
 use bytebuffer;
@@ -62,9 +63,13 @@ pub fn hw_control_run(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_s
 }
 
 fn discover(p_sock : &socket2::Socket) {
+    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(255,255,255,255)), 1024);
+    let sock2_addr = socket2::SockAddr::from (addr);
     let mut buffer = bytebuffer::ByteBuffer::new();
+    let mut buf: [u8; 20] = [0; 20];
     buffer.write_bytes(&vec![0xEF, 0xFF, 0x02]);
-
+    p_sock.send_to(buffer, &sock2_addr);
+    let r = p_sock.recv_from(&buf);
     
     println!("Discover!");
 }
