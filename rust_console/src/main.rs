@@ -39,7 +39,6 @@ fn main() {
     // Create an instance of the UDPdata type
     let mut i_udp = udp::UDPdata::new();
     // Announce udp module and initialise it
-    i_udp.udp_ann();
     i_udp.udp_init();   // This will run the reader and writer threads
 
     // Temporary code to wait a while then close everything and exit

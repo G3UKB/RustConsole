@@ -30,10 +30,6 @@ use std::time::Duration;
 use socket2;
 use std::sync::Arc;
 
-pub fn udp_reader_ann() {
-    println!("UDP Reader");
-}
-
 pub fn reader_start(receiver : crossbeam_channel::Receiver<i32>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
         reader_run(receiver, &p_sock);
@@ -41,7 +37,7 @@ pub fn reader_start(receiver : crossbeam_channel::Receiver<i32>, p_sock : Arc<so
 }
 
 pub fn reader_run(receiver : crossbeam_channel::Receiver<i32>, p_sock : &socket2::Socket) {
-    println!("Reader running");
+    println!("UDP Reader running");
     loop {
         thread::sleep(Duration::from_millis(100));
         // Check for termination code
@@ -53,6 +49,6 @@ pub fn reader_run(receiver : crossbeam_channel::Receiver<i32>, p_sock : &socket2
 
         // Perform read data
     }
-    println!("Reader exiting");
+    println!("UDP Reader exiting");
     thread::sleep(Duration::from_millis(1000));
 }

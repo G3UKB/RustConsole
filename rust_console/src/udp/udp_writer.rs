@@ -30,10 +30,6 @@ use std::time::Duration;
 use socket2;
 use std::sync::Arc;
 
-pub fn udp_writer_ann() {
-    println!("UDP Writer");
-}
-
 pub fn writer_start(receiver : crossbeam_channel::Receiver<i32>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
         writer_run(receiver, &p_sock);
@@ -41,7 +37,7 @@ pub fn writer_start(receiver : crossbeam_channel::Receiver<i32>, p_sock : Arc<so
 }
 
 pub fn writer_run(receiver : crossbeam_channel::Receiver<i32>, p_sock : &socket2::Socket) {
-    println!("Writer running");
+    println!("UDP Writer running");
     loop {
         thread::sleep(Duration::from_millis(100));
         // Check for termination code
@@ -53,6 +49,6 @@ pub fn writer_run(receiver : crossbeam_channel::Receiver<i32>, p_sock : &socket2
 
         // Perform write data
     }
-    println!("Writer exiting");
+    println!("UDP Writer exiting");
     thread::sleep(Duration::from_millis(1000));
 }

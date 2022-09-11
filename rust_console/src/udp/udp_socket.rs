@@ -44,10 +44,6 @@ bob@bobcowdery.plus.com
             }
         }
 
-        pub fn udp_socket_ann(&mut self) {
-            println!("UDP Socket");
-        }
-
         pub fn udp_revert_socket(&mut self) {
             self.sock2.set_broadcast(false).expect("set_broadcast call failed");
             self.sock2.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
