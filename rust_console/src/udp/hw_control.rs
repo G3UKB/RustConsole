@@ -28,11 +28,16 @@ bob@bobcowdery.plus.com
 use std::thread;
 use std::time::Duration;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use socket2;
+use std::mem::MaybeUninit;
 use std::sync::Arc;
-use bytebuffer;
+
+use socket2;
 
 use crate::common;
+
+const MAX_MSG:  usize = 63;
+static mut DATA_OUT: [u8; MAX_MSG] = [0; MAX_MSG];
+static mut DATA_IN: [MaybeUninit<u8>; MAX_MSG] = unsafe { MaybeUninit::uninit().assume_init() };
 
 pub fn hw_control_start(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
@@ -44,7 +49,7 @@ pub fn hw_control_run(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_s
     println!("Hardware Control running");
     loop {
         thread::sleep(Duration::from_millis(100));
-        // Check for termination code
+        // Handle messages
         let r = receiver.try_recv();
         match r {
             Ok(file) => {
@@ -65,11 +70,13 @@ pub fn hw_control_run(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_s
 fn discover(p_sock : &socket2::Socket) {
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(255,255,255,255)), 1024);
     let sock2_addr = socket2::SockAddr::from (addr);
-    let mut buffer = bytebuffer::ByteBuffer::new();
-    let mut buf: [u8; 20] = [0; 20];
-    buffer.write_bytes(&vec![0xEF, 0xFF, 0x02]);
-    p_sock.send_to(buffer, &sock2_addr);
-    let r = p_sock.recv_from(&buf);
-    
+
+    unsafe {
+        DATA_OUT[0] = 0xEF;
+        DATA_OUT[1] = 0xFF;
+        DATA_OUT[2] = 0x02;
+        p_sock.send_to(&DATA_OUT, &sock2_addr);
+        let r = p_sock.recv_from(&mut DATA_IN);
+    }
     println!("Discover!");
 }
