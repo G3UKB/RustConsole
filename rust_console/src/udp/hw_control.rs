@@ -75,7 +75,11 @@ fn discover(p_sock : &socket2::Socket) {
         DATA_OUT[0] = 0xEF;
         DATA_OUT[1] = 0xFF;
         DATA_OUT[2] = 0x02;
-        p_sock.send_to(&DATA_OUT, &sock2_addr);
+        let r1 = p_sock.send_to(&DATA_OUT, &sock2_addr);
+        match r1 {
+            Ok(res) => println!("Sent {}", res),
+            Err(error) => println!("Write error! {}", error),  
+        };
         
         let mut count = 10;
         while (count > 0) {
@@ -95,8 +99,8 @@ fn discover(p_sock : &socket2::Socket) {
                         continue;
                     };
                 },
-                Err(_error) => {
-                    println!("Read error!");
+                Err(error) => {
+                    println!("Read error! {}", error);
                     break;  
                 }
             };
