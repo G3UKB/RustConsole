@@ -87,7 +87,7 @@ fn discover(p_sock : &socket2::Socket) {
         let resp = read_response(p_sock, "Discover");
         match resp {
             None => println!("read_response failed"),
-            Some(addr) => println!("Addr: {:#?}", addr.as_inet()),
+            Some(addr) => println!("Addr: {:#?}", addr),
         }
     }
 }
