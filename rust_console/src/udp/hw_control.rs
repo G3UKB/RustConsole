@@ -34,7 +34,7 @@ use std::result;
 use std::io;
 use std::option;
 
-use socket2;
+use socket2::{self, SockAddr};
 
 use crate::common;
 
@@ -84,14 +84,16 @@ fn discover(p_sock : &socket2::Socket) {
             Err(error) => println!("Write error! {}", error),  
         };
         
-        let addr = read_response(p_sock, "Discover");
-        println!("Addr: {:#?}", Some(socket2::SockAddr::ip()))
+        let resp = read_response(p_sock, "Discover");
+        match resp {
+            None => println!("read_response failed"),
+            Some(addr) => println!("Addr: {:#?}", addr.as_inet()),
+        }
     }
 }
 
 fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket2::SockAddr>{
 
-    let opt : option::Option<socket2::SockAddr> = None;
     unsafe {
         let mut count = 10;
         while count > 0 {
