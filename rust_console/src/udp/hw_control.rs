@@ -30,6 +30,8 @@ use std::time::Duration;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
+use std::result;
+use std::io;
 
 use socket2;
 
@@ -55,9 +57,9 @@ pub fn hw_control_run(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_s
             Ok(file) => {
                 match file {
                     common::HWMsg::Terminate => break,
-                    common::HWMsg::Discover_HW => discover(p_sock),
-                    common::HWMsg::Start_HW => println!("Start!"),
-                    common::HWMsg::Stop_HW=> println!("Stop!"),
+                    common::HWMsg::DiscoverHw => discover(p_sock),
+                    common::HWMsg::StartHw => println!("Start!"),
+                    common::HWMsg::StopHw=> println!("Stop!"),
                 };
             },
             Err(_error) => continue,
@@ -73,39 +75,53 @@ fn discover(p_sock : &socket2::Socket) {
 
     unsafe {
         DATA_OUT[0] = 0xEF;
-        DATA_OUT[1] = 0xFF;
+        DATA_OUT[1] = 0xFE;
         DATA_OUT[2] = 0x02;
         let r1 = p_sock.send_to(&DATA_OUT, &sock2_addr);
         match r1 {
-            Ok(res) => println!("Sent {}", res),
+            Ok(res) => println!("Sent discover sz:{}", res),
             Err(error) => println!("Write error! {}", error),  
         };
         
+        let addr = read_response(p_sock, "Discover");
+    }
+}
+
+fn read_response(p_sock : &socket2::Socket, ann : &str) -> Result<(), MyError>{
+
+    unsafe {
         let mut count = 10;
-        while (count > 0) {
+        while count > 0 {
             let r = p_sock.recv_from(&mut DATA_IN);
             match r {
                 Ok(res) => {
-                    if (res.0 > 0) {
-                        println!("Read {}", res.0);
+                    if res.0 > 0 {
+                        println!("{} response sz:{}", ann, res.0);
+                        return Ok(res.1);
                         break;       
                     } else {
                         println!("Read timeout!");
+                        return Err("Read timeout!");
                         count = count-1;
-                        if (count <= 0) {
-                            println!("Failed to read after 10 attempts!");
+                        if count <= 0 {
+                            println!("Timeout: Failed to read after 10 attempts!");
+                            return Err("Timeout: Failed to read after 10 attempts!");
                             break;
                         }
                         continue;
                     };
                 },
                 Err(error) => {
-                    println!("Read error! {}", error);
-                    break;  
+                    count = count-1;
+                    if (count <= 0) {
+                        println!("Error: Failed to read after 10 attempts!");
+                        return Err("Timeout: Failed to read after 10 attempts!");
+                        break;
+                    }
+                    continue;  
                 }
             };
                
         };
-    }
-    println!("Discover!");
+    };
 }

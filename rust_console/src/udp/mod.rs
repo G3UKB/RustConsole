@@ -61,7 +61,7 @@ impl UDPdata {
     pub fn udp_init(&mut self) {
         println!("Initialising UDP threads");
         let mut i_socket = udp_socket::Sockdata::new();
-        i_socket.udp_revert_socket();
+        //i_socket.udp_revert_socket();
         let p_sock = i_socket.udp_sock_ref();
 
         let arc = p_sock.clone();
@@ -74,9 +74,9 @@ impl UDPdata {
         hw_control::hw_control_start(self.hw_receiver.clone(), arc2);
 
         // Test
-        self.hw_sender.send(common::HWMsg::Discover_HW).unwrap();
-        self.hw_sender.send(common::HWMsg::Start_HW).unwrap();
-        self.hw_sender.send(common::HWMsg::Stop_HW).unwrap();
+        self.hw_sender.send(common::HWMsg::DiscoverHw).unwrap();
+        self.hw_sender.send(common::HWMsg::StartHw).unwrap();
+        self.hw_sender.send(common::HWMsg::StopHw).unwrap();
     }
 
     pub fn udp_close(&mut self) {

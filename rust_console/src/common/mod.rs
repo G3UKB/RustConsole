@@ -34,7 +34,7 @@ pub enum WriterMsg {
 
 pub enum HWMsg {
     Terminate,
-    Discover_HW,
-    Start_HW,
-    Stop_HW,
+    DiscoverHw,
+    StartHw,
+    StopHw,
 }
