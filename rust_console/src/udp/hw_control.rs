@@ -85,6 +85,7 @@ fn discover(p_sock : &socket2::Socket) {
         };
         
         let addr = read_response(p_sock, "Discover");
+        println!("Addr: {:#?}", Some(socket2::SockAddr::ip()))
     }
 }
 
