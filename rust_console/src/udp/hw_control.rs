@@ -32,6 +32,7 @@ use std::mem::MaybeUninit;
 use std::sync::Arc;
 use std::result;
 use std::io;
+use std::option;
 
 use socket2;
 
@@ -87,8 +88,9 @@ fn discover(p_sock : &socket2::Socket) {
     }
 }
 
-fn read_response(p_sock : &socket2::Socket, ann : &str) -> Result<(), MyError>{
+fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket2::SockAddr>{
 
+    let opt : option::Option<socket2::SockAddr> = None;
     unsafe {
         let mut count = 10;
         while count > 0 {
@@ -97,15 +99,15 @@ fn read_response(p_sock : &socket2::Socket, ann : &str) -> Result<(), MyError>{
                 Ok(res) => {
                     if res.0 > 0 {
                         println!("{} response sz:{}", ann, res.0);
-                        return Ok(res.1);
+                    return Some(res.1);
                         break;       
                     } else {
                         println!("Read timeout!");
-                        return Err("Read timeout!");
+                        return None;
                         count = count-1;
                         if count <= 0 {
                             println!("Timeout: Failed to read after 10 attempts!");
-                            return Err("Timeout: Failed to read after 10 attempts!");
+                            return None;
                             break;
                         }
                         continue;
@@ -115,7 +117,7 @@ fn read_response(p_sock : &socket2::Socket, ann : &str) -> Result<(), MyError>{
                     count = count-1;
                     if (count <= 0) {
                         println!("Error: Failed to read after 10 attempts!");
-                        return Err("Timeout: Failed to read after 10 attempts!");
+                        return None;
                         break;
                     }
                     continue;  
@@ -124,4 +126,5 @@ fn read_response(p_sock : &socket2::Socket, ann : &str) -> Result<(), MyError>{
                
         };
     };
+    return None;
 }
