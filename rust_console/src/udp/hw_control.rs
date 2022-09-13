@@ -34,20 +34,20 @@ use std::option;
 
 use socket2;
 
-use crate::common;
+use crate::common::messages;
 
 const MAX_MSG:  usize = 63;
 static mut DATA_OUT: [u8; MAX_MSG] = [0; MAX_MSG];
 static mut DATA_IN: [MaybeUninit<u8>; MAX_MSG] = unsafe { MaybeUninit::uninit().assume_init() };
 static mut ADDR: option::Option<socket2::SockAddr> = None;
 
-pub fn hw_control_start(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_sock : Arc<socket2::Socket>) {
+pub fn hw_control_start(receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
         hw_control_run(receiver, &p_sock);
     });
 }
 
-pub fn hw_control_run(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_sock : &socket2::Socket) {
+pub fn hw_control_run(receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : &socket2::Socket) {
     println!("Hardware Control running");
     loop {
         thread::sleep(Duration::from_millis(100));
@@ -56,10 +56,10 @@ pub fn hw_control_run(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_s
         match r {
             Ok(file) => {
                 match file {
-                    common::HWMsg::Terminate => break,
-                    common::HWMsg::DiscoverHw => do_discover(p_sock),
-                    common::HWMsg::StartHw =>  do_start(p_sock, false),
-                    common::HWMsg::StopHw=>  do_stop(p_sock),
+                    messages::HWMsg::Terminate => break,
+                    messages::HWMsg::DiscoverHw => do_discover(p_sock),
+                    messages::HWMsg::StartHw =>  do_start(p_sock, false),
+                    messages::HWMsg::StopHw=>  do_stop(p_sock),
                 };
             },
             Err(_error) => continue,

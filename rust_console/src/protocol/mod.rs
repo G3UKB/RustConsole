@@ -26,3 +26,5 @@ bob@bobcowdery.plus.com
 
 pub mod decoder;
 pub mod encoder;
+pub mod cc_in;
+pub mod cc_out;

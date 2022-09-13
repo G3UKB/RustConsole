@@ -34,16 +34,16 @@ pub mod hw_control;
 use std::thread;
 use std::time::Duration;
 
-use crate::common;
+use crate::common::messages;
 use crossbeam_channel::unbounded;
 
 pub struct UDPdata{
-    pub r_sender : crossbeam_channel::Sender<common::ReaderMsg>,
-    pub r_receiver : crossbeam_channel::Receiver<common::ReaderMsg>,
-    pub w_sender : crossbeam_channel::Sender<common::WriterMsg>,
-    pub w_receiver : crossbeam_channel::Receiver<common::WriterMsg>,
-    pub hw_sender : crossbeam_channel::Sender<common::HWMsg>,
-    pub hw_receiver : crossbeam_channel::Receiver<common::HWMsg>,
+    pub r_sender : crossbeam_channel::Sender<messages::ReaderMsg>,
+    pub r_receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
+    pub w_sender : crossbeam_channel::Sender<messages::WriterMsg>,
+    pub w_receiver : crossbeam_channel::Receiver<messages::WriterMsg>,
+    pub hw_sender : crossbeam_channel::Sender<messages::HWMsg>,
+    pub hw_receiver : crossbeam_channel::Receiver<messages::HWMsg>,
 }
 
 impl UDPdata {
@@ -76,17 +76,17 @@ impl UDPdata {
         hw_control::hw_control_start(self.hw_receiver.clone(), arc2);
 
         // Test
-        self.hw_sender.send(common::HWMsg::DiscoverHw).unwrap();
+        self.hw_sender.send(messages::HWMsg::DiscoverHw).unwrap();
         thread::sleep(Duration::from_millis(1000));
         i_socket.udp_revert_socket();
-        self.hw_sender.send(common::HWMsg::StartHw).unwrap();
+        self.hw_sender.send(messages::HWMsg::StartHw).unwrap();
         thread::sleep(Duration::from_millis(1000));
-        self.hw_sender.send(common::HWMsg::StopHw).unwrap();
+        self.hw_sender.send(messages::HWMsg::StopHw).unwrap();
     }
 
     pub fn udp_close(&mut self) {
-        self.r_sender.send(common::ReaderMsg::Terminate).unwrap();
-        self.w_sender.send(common::WriterMsg::Terminate).unwrap();
-        self.hw_sender.send(common::HWMsg::Terminate).unwrap();
+        self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
+        self.w_sender.send(messages::WriterMsg::Terminate).unwrap();
+        self.hw_sender.send(messages::HWMsg::Terminate).unwrap();
     }
 }
