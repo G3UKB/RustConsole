@@ -39,12 +39,12 @@ fn main() {
     println!("Starting RustConsole...");
 
     // Create an instance of the UDPdata type
-    let mut i_udp = udp::UDPdata::new();
+    let mut i_udp = udp::udp_man::UDPdata::new();
     // Announce udp module and initialise it
     i_udp.udp_init();   // This will run the reader and writer threads
 
     // Temporary code to wait a while then close everything and exit
     thread::sleep(Duration::from_millis(5000));
-    udp::UDPdata::udp_close(&mut i_udp);
+    udp::udp_man::UDPdata::udp_close(&mut i_udp);
     thread::sleep(Duration::from_millis(1000));
 }
