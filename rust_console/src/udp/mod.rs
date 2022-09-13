@@ -31,6 +31,9 @@ pub mod udp_reader;
 pub mod udp_writer;
 pub mod hw_control;
 
+use std::thread;
+use std::time::Duration;
+
 use crate::common;
 use crossbeam_channel::unbounded;
 
@@ -61,7 +64,6 @@ impl UDPdata {
     pub fn udp_init(&mut self) {
         println!("Initialising UDP threads");
         let mut i_socket = udp_socket::Sockdata::new();
-        //i_socket.udp_revert_socket();
         let p_sock = i_socket.udp_sock_ref();
 
         let arc = p_sock.clone();
@@ -75,7 +77,9 @@ impl UDPdata {
 
         // Test
         self.hw_sender.send(common::HWMsg::DiscoverHw).unwrap();
+        i_socket.udp_revert_socket();
         self.hw_sender.send(common::HWMsg::StartHw).unwrap();
+        thread::sleep(Duration::from_millis(1000));
         self.hw_sender.send(common::HWMsg::StopHw).unwrap();
     }
 

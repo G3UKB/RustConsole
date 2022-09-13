@@ -30,11 +30,9 @@ use std::time::Duration;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::mem::MaybeUninit;
 use std::sync::Arc;
-use std::result;
-use std::io;
 use std::option;
 
-use socket2::{self, SockAddr};
+use socket2;
 
 use crate::common;
 
@@ -59,9 +57,9 @@ pub fn hw_control_run(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_s
             Ok(file) => {
                 match file {
                     common::HWMsg::Terminate => break,
-                    common::HWMsg::DiscoverHw => discover(p_sock),
-                    common::HWMsg::StartHw => println!("Start!"),
-                    common::HWMsg::StopHw=> println!("Stop!"),
+                    common::HWMsg::DiscoverHw => do_discover(p_sock),
+                    common::HWMsg::StartHw =>  do_start(p_sock, false),
+                    common::HWMsg::StopHw=>  do_stop(p_sock),
                 };
             },
             Err(_error) => continue,
@@ -71,7 +69,7 @@ pub fn hw_control_run(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_s
     thread::sleep(Duration::from_millis(1000));
 }
 
-fn discover(p_sock : &socket2::Socket) {
+fn do_discover(p_sock : &socket2::Socket) {
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(255,255,255,255)), 1024);
     let sock2_addr = socket2::SockAddr::from (addr);
 
@@ -96,6 +94,48 @@ fn discover(p_sock : &socket2::Socket) {
     }
 }
 
+fn do_start(p_sock : &socket2::Socket, wbs : bool) {
+    
+    unsafe {
+        DATA_OUT[0] = 0xEF;
+        DATA_OUT[1] = 0xFE;
+        DATA_OUT[2] = 0x04;
+        if wbs{
+            DATA_OUT[3] = 0x03;
+            DATA_OUT[4] = 0x01;
+        }
+        match &ADDR {
+            None => println!("Can't start hardware as the socket address has not been obtained. Run Discover()"),
+            Some(addr) => {
+                let r = p_sock.send_to(&DATA_OUT, &addr);
+                match r {
+                    Ok(res) => println!("Sent hardware start sz:{}", res),
+                    Err(error) => println!("Start hardware error! {}", error),  
+                };
+            }
+        }
+    }
+}
+
+fn do_stop(p_sock : &socket2::Socket) {
+    
+    unsafe {
+        DATA_OUT[0] = 0xEF;
+        DATA_OUT[1] = 0xFE;
+        DATA_OUT[2] = 0x04;
+        match &ADDR {
+            None => println!("Can't stop hardware as the socket address has not been obtained. Run Discover()"),
+            Some(addr) => {
+                let r = p_sock.send_to(&DATA_OUT, &addr);
+                match r {
+                    Ok(res) => println!("Sent hardware stop sz:{}", res),
+                    Err(error) => println!("Stop hardware error! {}", error),  
+                };
+            }
+        }
+    }
+}
+
 fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket2::SockAddr>{
 
     let  mut result : option::Option<socket2::SockAddr> = None;
@@ -110,12 +150,9 @@ fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket
                     result = Some(res.1);
                         break;       
                     } else {
-                        println!("Read timeout!");
-                        //result = None;
                         count = count-1;
                         if count <= 0 {
                             println!("Timeout: Failed to read after 10 attempts!");
-                            //return None;
                             break;
                         }
                         continue;
@@ -123,9 +160,8 @@ fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket
                 },
                 Err(error) => {
                     count = count-1;
-                    if (count <= 0) {
-                        println!("Error: Failed to read after 10 attempts!");
-                        //return None;
+                    if count <= 0 {
+                        println!("Error: Failed to read after 10 attempts! {}", error);
                         break;
                     }
                     continue;  
