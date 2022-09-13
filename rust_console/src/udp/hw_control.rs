@@ -41,6 +41,7 @@ use crate::common;
 const MAX_MSG:  usize = 63;
 static mut DATA_OUT: [u8; MAX_MSG] = [0; MAX_MSG];
 static mut DATA_IN: [MaybeUninit<u8>; MAX_MSG] = unsafe { MaybeUninit::uninit().assume_init() };
+static mut ADDR: option::Option<socket2::SockAddr> = None;
 
 pub fn hw_control_start(receiver : crossbeam_channel::Receiver<common::HWMsg>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
@@ -87,13 +88,17 @@ fn discover(p_sock : &socket2::Socket) {
         let resp = read_response(p_sock, "Discover");
         match resp {
             None => println!("read_response failed"),
-            Some(addr) => println!("Addr: {:#?}", addr),
+            Some(addr) => {
+                println!("Addr: {:#?}", addr);
+                ADDR =  Some(addr);
+            },
         }
     }
 }
 
 fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket2::SockAddr>{
 
+    let  mut result : option::Option<socket2::SockAddr> = None;
     unsafe {
         let mut count = 10;
         while count > 0 {
@@ -102,15 +107,15 @@ fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket
                 Ok(res) => {
                     if res.0 > 0 {
                         println!("{} response sz:{}", ann, res.0);
-                    return Some(res.1);
+                    result = Some(res.1);
                         break;       
                     } else {
                         println!("Read timeout!");
-                        return None;
+                        //result = None;
                         count = count-1;
                         if count <= 0 {
                             println!("Timeout: Failed to read after 10 attempts!");
-                            return None;
+                            //return None;
                             break;
                         }
                         continue;
@@ -120,7 +125,7 @@ fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket
                     count = count-1;
                     if (count <= 0) {
                         println!("Error: Failed to read after 10 attempts!");
-                        return None;
+                        //return None;
                         break;
                     }
                     continue;  
@@ -129,5 +134,5 @@ fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket
                
         };
     };
-    return None;
+    return result;
 }
