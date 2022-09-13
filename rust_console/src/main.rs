@@ -29,6 +29,7 @@ use std::time::Duration;
 
 pub mod udp;
 pub mod common;
+pub mod protocol;
 
 /// Entry point for RustConsole SDR application
 ///

@@ -31,6 +31,7 @@ use socket2;
 use std::sync::Arc;
 
 use crate::common;
+use crate::protocol;
 
 pub fn writer_start(receiver : crossbeam_channel::Receiver<common::WriterMsg>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
