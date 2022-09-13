@@ -77,6 +77,7 @@ impl UDPdata {
 
         // Test
         self.hw_sender.send(common::HWMsg::DiscoverHw).unwrap();
+        thread::sleep(Duration::from_millis(1000));
         i_socket.udp_revert_socket();
         self.hw_sender.send(common::HWMsg::StartHw).unwrap();
         thread::sleep(Duration::from_millis(1000));
