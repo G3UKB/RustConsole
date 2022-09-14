@@ -102,52 +102,52 @@ static mut CCO_MIC_SRC_M: u8 = 0x7f;
 static mut CCO_ALEX_ATTN_B: [u8; 4] = [ 0x00,0x01,0x10,0x11 ];
 static mut CCO_ALEX_ATTN_M: u8 = 0xfc;
 // Preamp
-static mut CCO_PREAMP_b: [u8; 2] = [ 0x00,0x04 ];
-static mut CCO_preamp_m: u8 = 0xfb;
+static mut CCO_PREAMP_B: [u8; 2] = [ 0x00,0x04 ];
+static mut CCO_preamp_M: u8 = 0xfb;
 // Alex RX ant
-unsigned char cco_rx_ant_b[] = { 0x00,0x20,0x40,0x60 };
-unsigned char cco_rx_ant_m = 0x9f;
+static mut CCO_RX_ant_B: [u8; 4] = [ 0x00,0x20,0x40,0x60 ];
+static mut CC0_RX_ant_M: u8 = 0x9f;
 // Alex RX out
-unsigned char cco_alex_rx_out_b[] = { 0x00,0x80 };
-unsigned char cco_alex_rx_out_m = 0x7f;
+static mut CCO_ALEX_RX_OUT_B: [u8; 2] = [ 0x00,0x80 ];
+static mut CCO_ALEX_RX_OUT_M: u8 = 0x7f;
 // Alex TX relay
-unsigned char cco_alex_tx_rly_b[] = { 0x00,0x01,0x10 };
-unsigned char cco_alex_tx_rly_m = 0xfc;
+static mut CCO_ALEX_TX_RLY_B: [u8; 3] = [ 0x00,0x01,0x10 ];
+static mut CCO_ALEX_TX_RLY_M: u8 = 0xfc;
 // Duplex
-unsigned char cco_duplex_b[] = { 0x00,0x04 };
-unsigned char cco_duplex_m = 0xfb;
+static mut CCO_DUPLEX_B: [u8; 2] = [ 0x00,0x04 ];
+static mut CCO_DUPLEX_M: u8 = 0xfb;
 // No.RX
-unsigned char cco_num_rx_b[] = { 0x00,0x08,0x10 };
-unsigned char cco_num_rx_m = 0xc7;
+static mut CCO_NUM_RX_B: [u8; 3] = [ 0x00,0x08,0x10 ];
+static mut CCO_NUM_RX_M: u8 = 0xc7;
 // Alex auto
-unsigned char cco_alex_auto_b[] = { 0x00,0x40 };
-unsigned char cco_alex_auto_m = 0xbf;
+static mut CCO_ALEX_AUTO_B: [u8; 2] = [ 0x00,0x40 ];
+static mut CCO_ALEX_AUTO_M: u8 = 0xbf;
 // Alex HPF bypass
-unsigned char cco_hpf_bypass_b[] = { 0x00,0x20 };
-unsigned char cco_hpf_bypass_m = 0xdf;
+static mut CCO_HPF_BYPASS_B: [u8; 2] = [ 0x00,0x20 ];
+static mut CCO_HPF_BYPASS_M: u8 = 0xdf;
 // LPF Filter selects
-unsigned char cco_alex_lpf_30_20_b[] = { 0x00,0x01 };
-unsigned char cco_alex_lpf_30_20_m = 0xfe;
-unsigned char cco_alex_lpf_60_40_b[] = { 0x00,0x02 };
-unsigned char cco_alex_lpf_60_40_m = 0xfd;
-unsigned char cco_alex_lpf_80_b[] = { 0x00,0x04 };
-unsigned char cco_alex_lpf_80_m = 0xfb;
-unsigned char cco_alex_lpf_160_b[] = { 0x00,0x08 };
-unsigned char cco_alex_lpf_160_m = 0xf7;
-unsigned char cco_alex_lpf_6_b[] = { 0x00,0x10 };
-unsigned char cco_alex_lpf_6_m = 0xef;
-unsigned char cco_alex_lpf_12_10_b[] = { 0x00,0x20 };
-unsigned char cco_alex_lpf_12_10_m = 0xdf;
-unsigned char cco_alex_lpf_17_15_b[] = { 0x00,0x40 };
-unsigned char cco_alex_lpf_17_15_m = 0xbf;
+static mut CCO_ALEX_LPF_30_20_B: [u8; 2] = [ 0x00,0x01 ];
+static mut CCO_ALEX_LPF_30_20_M: u8 = 0xfe;
+static mut CCO_ALEX_LPF_60_40_B: [u8; 2] = [ 0x00,0x02 ];
+static mut CCO_ALEX_LPF_60_40_M: u8 = 0xfd;
+static mut CCO_ALEX_LPF_80_B: [u8; 2] = [ 0x00,0x04 ];
+static mut CCO_ALEX_LPF_80_M: u8 = 0xfb;
+static mut CCO_ALEX_LPF_160_: [u8; 2] = [ 0x00,0x08 ];
+static mut CCO_ALEX_LPF_160_M: u8 = 0xf7;
+static mut CCO_ALEX_LPF_6_B: [u8; 2] = [ 0x00,0x10 ];
+static mut CCO_ALEX_LPF_6_M: u8 = 0xef;
+static mut CCO_ALEX_LPF_12_10_B: [u8; 2] = [ 0x00,0x20 ];
+static mut CCO_ALEX_LPF_12_10_M: u8 = 0xdf;
+static mut CCO_ALEX_LPF_17_15_B: [u8; 2] = [ 0x00,0x40 ];
+static mut CCO_ALEX_LPF_17_15_M: u8 = 0xbf;
 // HPF Filter selects
-unsigned char cco_alex_hpf_13_b[] = { 0x00,0x01 };
-unsigned char cco_alex_hpf_13_m = 0xfe;
-unsigned char cco_alex_hpf_20_b[] = { 0x00,0x02 };
-unsigned char cco_alex_hpf_20_m = 0xfd;
-unsigned char cco_alex_hpf_9_5_b[] = { 0x00,0x04 };
-unsigned char cco_alex_hpf_9_5_m = 0xfb;
-unsigned char cco_alex_hpf_6_5_b[] = { 0x00,0x08 };
-unsigned char cco_alex_hpf_6_5_m = 0xf7;
-unsigned char cco_alex_hpf_1_5_b[] = { 0x00,0x10 };
-unsigned char cco_alex_hpf_1_5_m = 0xef;
+static mut CCO_ALEX_hpf_13_B: [u8; 2] = [ 0x00,0x01 ];
+static mut CCO_ALEX_hpf_13_M: u8 = 0xfe;
+static mut CCO_ALEX_hpf_20_B: [u8;2] = [ 0x00,0x02 ];
+static mut CCO_ALEX_hpf_20_M: u8 = 0xfd;
+static mut CCO_ALEX_hpf_9_5_B: [u8; 2] = [ 0x00,0x04 ];
+static mut CCO_ALEX_hpf_9_5_M: u8 = 0xfb;
+static mut CCO_ALEX_hpf_6_5_B: [u8; 2] = [ 0x00,0x08 ];
+static mut CCO_ALEX_hpf_6_5_M: u8 = 0xf7;
+static mut CCO_ALEX_hpf_1_5_B: [u8; 2] = [ 0x00,0x10 ];
+static mut CCO_ALEX_hpf_1_5_M: u8 = 0xef;
