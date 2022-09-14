@@ -83,5 +83,71 @@ static mut CC_ARRAY: [[u8; 5];7] =
 // defines where those bits are placed in the byte. It does not define which byte C2 - C4 as that
 // is defined by the calling function that sets the bits.
 
+// Speed
 static mut CCO_SPEED_B: [u8; 4] = [ 0x00, 0x01, 0x10, 0x11 ];
 static mut CCO_SPEED_M: u8 = 0xfc;
+// 10MHz ref
+static mut CCO_10MHZ_REF_B: [u8; 3] = [ 0x00,0x04,0x08 ];
+static mut CCO_10MHZ_REF_M: u8 = 0x3;
+// 122MHs ref
+static mut CCO_122MHZ_REF_B: [u8; 2] = [ 0x00,0x10 ];
+static mut CCO_122MHZ_REF_M: u8 = 0xef;
+// Board config
+static mut CCO_BOARD_CONFIG_B: [u8; 4] = [ 0x00,0x20,0x40,0x60 ];
+static mut CCO_BOARD_CONFIG_M: u8 = 0x9f;
+// Mic src
+static mut CCO_MIC_SRC_B: [u8; 2] = [ 0x00,0x80 ];
+static mut CCO_MIC_SRC_M: u8 = 0x7f;
+// Alex attenuator
+static mut CCO_ALEX_ATTN_B: [u8; 4] = [ 0x00,0x01,0x10,0x11 ];
+static mut CCO_ALEX_ATTN_M: u8 = 0xfc;
+// Preamp
+static mut CCO_PREAMP_b: [u8; 2] = [ 0x00,0x04 ];
+static mut CCO_preamp_m: u8 = 0xfb;
+// Alex RX ant
+unsigned char cco_rx_ant_b[] = { 0x00,0x20,0x40,0x60 };
+unsigned char cco_rx_ant_m = 0x9f;
+// Alex RX out
+unsigned char cco_alex_rx_out_b[] = { 0x00,0x80 };
+unsigned char cco_alex_rx_out_m = 0x7f;
+// Alex TX relay
+unsigned char cco_alex_tx_rly_b[] = { 0x00,0x01,0x10 };
+unsigned char cco_alex_tx_rly_m = 0xfc;
+// Duplex
+unsigned char cco_duplex_b[] = { 0x00,0x04 };
+unsigned char cco_duplex_m = 0xfb;
+// No.RX
+unsigned char cco_num_rx_b[] = { 0x00,0x08,0x10 };
+unsigned char cco_num_rx_m = 0xc7;
+// Alex auto
+unsigned char cco_alex_auto_b[] = { 0x00,0x40 };
+unsigned char cco_alex_auto_m = 0xbf;
+// Alex HPF bypass
+unsigned char cco_hpf_bypass_b[] = { 0x00,0x20 };
+unsigned char cco_hpf_bypass_m = 0xdf;
+// LPF Filter selects
+unsigned char cco_alex_lpf_30_20_b[] = { 0x00,0x01 };
+unsigned char cco_alex_lpf_30_20_m = 0xfe;
+unsigned char cco_alex_lpf_60_40_b[] = { 0x00,0x02 };
+unsigned char cco_alex_lpf_60_40_m = 0xfd;
+unsigned char cco_alex_lpf_80_b[] = { 0x00,0x04 };
+unsigned char cco_alex_lpf_80_m = 0xfb;
+unsigned char cco_alex_lpf_160_b[] = { 0x00,0x08 };
+unsigned char cco_alex_lpf_160_m = 0xf7;
+unsigned char cco_alex_lpf_6_b[] = { 0x00,0x10 };
+unsigned char cco_alex_lpf_6_m = 0xef;
+unsigned char cco_alex_lpf_12_10_b[] = { 0x00,0x20 };
+unsigned char cco_alex_lpf_12_10_m = 0xdf;
+unsigned char cco_alex_lpf_17_15_b[] = { 0x00,0x40 };
+unsigned char cco_alex_lpf_17_15_m = 0xbf;
+// HPF Filter selects
+unsigned char cco_alex_hpf_13_b[] = { 0x00,0x01 };
+unsigned char cco_alex_hpf_13_m = 0xfe;
+unsigned char cco_alex_hpf_20_b[] = { 0x00,0x02 };
+unsigned char cco_alex_hpf_20_m = 0xfd;
+unsigned char cco_alex_hpf_9_5_b[] = { 0x00,0x04 };
+unsigned char cco_alex_hpf_9_5_m = 0xfb;
+unsigned char cco_alex_hpf_6_5_b[] = { 0x00,0x08 };
+unsigned char cco_alex_hpf_6_5_m = 0xf7;
+unsigned char cco_alex_hpf_1_5_b[] = { 0x00,0x10 };
+unsigned char cco_alex_hpf_1_5_m = 0xef;
