@@ -1,7 +1,8 @@
 /*
-common.rs
+cc_out_defs.rs
+module cc_out_defs
 
-Holder for common modules
+Command and Control definitions for cc_out (to hardware)
 
 Copyright (C) 2022 by G3UKB Bob Cowdery
 
@@ -24,5 +25,63 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-pub mod messages;
-pub mod cc_out_defs;
+// Speed
+pub enum CCOSpeed {
+	S48kHz,
+	S96kHz,
+	S192kHz,
+	S384kHz,
+}
+
+// Alex attenuator
+pub enum CCOAlexAttn {
+	Attn0db,
+	Attn10db,
+	Attn20db,
+	Attn30db
+}
+
+// Preamp
+pub enum CCOPreamp {
+	PreAmpOff,
+	PreAmpOn
+}
+
+// Alex RX ant
+pub enum CCORxAnt {
+	RxAntNone,
+	RxAnt1,
+	RxAnt2,
+	RxAntXV
+}
+
+// Duplex
+pub enum CCODuplex {
+	DuplexOff,
+	DuplexOn
+}
+
+// No.RX
+pub enum CCONumRx {
+	NumRx1,
+	NumRx2,
+	NumRx3
+}
+
+// Alex auto
+pub enum CCOAlexAuto {
+	AlexAuto,
+	AlexManual
+}
+
+// Alex HPF bypass
+pub enum CCOAlexBypass {
+	AlexHpfDisable,
+	AlexHpfEnable
+}
+
+// Alex LPF/HPF select
+pub enum CCOAlexHpfLpf {
+	AlexFiltDisable,
+	AlexFiltEnable
+}
