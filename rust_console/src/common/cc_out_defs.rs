@@ -85,3 +85,43 @@ pub enum CCOAlexHpfLpf {
 	AlexFiltDisable,
 	AlexFiltEnable
 }
+
+// 10MHz ref
+pub enum CCO10MhzRef {
+	R10MHzAtlas,
+	R10MHzPen,
+	R10MHzMerc
+}
+
+// 122MHz ref
+pub enum CCO122MhzRef {
+	R122MHzPen,
+	R122MHzMerc
+}
+
+// Board config
+pub enum CCOBoardConfig {
+	BoardNone,
+	BoardPen,
+	BoardMerc,
+	BoardBoth
+}
+
+// Mic src
+pub enum CCOMicSrc {
+	MicJanus,
+	MicPen
+}
+
+// Alex RX out
+pub enum CCOAlexRxOut {
+	RxOutOff,
+	RxOutOn
+}
+
+// Alex TX relay
+pub enum CCOAlexTxRly{
+	TxRlyTx1,
+	TxRlyTx2,
+	TxRlyTx3
+}
