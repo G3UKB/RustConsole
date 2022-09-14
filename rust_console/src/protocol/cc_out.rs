@@ -105,8 +105,8 @@ static mut CCO_ALEX_ATTN_M: u8 = 0xfc;
 static mut CCO_PREAMP_B: [u8; 2] = [ 0x00,0x04 ];
 static mut CCO_preamp_M: u8 = 0xfb;
 // Alex RX ant
-static mut CCO_RX_ant_B: [u8; 4] = [ 0x00,0x20,0x40,0x60 ];
-static mut CC0_RX_ant_M: u8 = 0x9f;
+static mut CCO_RX_ANT_B: [u8; 4] = [ 0x00,0x20,0x40,0x60 ];
+static mut CC0_RX_ANT_M: u8 = 0x9f;
 // Alex RX out
 static mut CCO_ALEX_RX_OUT_B: [u8; 2] = [ 0x00,0x80 ];
 static mut CCO_ALEX_RX_OUT_M: u8 = 0x7f;
