@@ -194,7 +194,7 @@ impl CCData {
 	// Return the next CC data in sequence
 	pub fn cc_out_next_seq(&mut self) -> [u8; 5] {
 		unsafe {
-			self.cc_el = self.cc_array[0..4][CC_IDX];
+			self.cc_el = self.cc_array[CC_IDX];
 			CC_IDX = CC_IDX + 1;
 			if CC_IDX > RR_CC {
 				CC_IDX = 0;
