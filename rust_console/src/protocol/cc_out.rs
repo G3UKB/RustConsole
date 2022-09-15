@@ -33,7 +33,7 @@ use crate::common::cc_out_defs;
 // Constants
 // Round robin sequence for sending CC bytes
 // Note 0-6 for CCOBufferIdx 
-const RR_CC:  u32 = 6;
+const RR_CC:  usize = 6;
 
 //========================================================================
 // Enumerations for bit fields in the CC structure
@@ -61,7 +61,7 @@ enum CCOByteIdx {
 // State variables
 
 // Current indux into array
-static mut CC_IDX: u32 = 0;
+static mut CC_IDX: usize = 0;
 // Default MOX state
 static mut CC_MOX_STATE: bool = false;
 
@@ -162,17 +162,21 @@ static CCO_ALEX_hpf_1_5_M: u8 = 0xef;
 //========================================================================
 // Implementations
 
+// The arrays that are modified by several threads/callers are wrapped in an Arc
+// allowing safe sharing.
 pub struct CCData{
 	// Default array contains the C0 values that define how C1-C4 are defined
-	cc_array : Arc<[[u8; 5];7]>,
+	cc_array : [[u8; 5];7],
 	// Single row of the array is returned as next in sequence
-	cc_el : Arc<[u8; 5]>,
+	cc_el : [u8; 5],
 }
 
+// Implementation methods on CCData
 impl CCData {
+	// Create a new instance and initialise the default arrays
 	pub fn new() -> CCData {
 		CCData {  
-			cc_array: Arc::new(
+			cc_array: (
 				[
 					[ 0x00, 0x00, 0x00, 0x00, 0x00 ],
 					[ 0x02, 0x00, 0x00, 0x00, 0x00 ],
@@ -183,7 +187,19 @@ impl CCData {
 					[ 0x14, 0x00, 0x00, 0x00, 0x00 ],
 				]
 			),
-			cc_el: Arc::new([ 0x00, 0x00, 0x00, 0x00, 0x00 ]),
+			cc_el: ([ 0x00, 0x00, 0x00, 0x00, 0x00 ]),
 		}
+	}
+
+	// Return the next CC data in sequence
+	pub fn cc_out_next_seq(&mut self) -> [u8; 5] {
+		unsafe {
+			self.cc_el = self.cc_array[0..4][CC_IDX];
+			CC_IDX = CC_IDX + 1;
+			if CC_IDX > RR_CC {
+				CC_IDX = 0;
+			}
+		};
+		return self.cc_el;
 	}
 }
