@@ -200,6 +200,6 @@ impl CCData {
 				CC_IDX = 0;
 			}
 		};
-		return self.cc_el;
+		return self.cc_el.clone();
 	}
 }
