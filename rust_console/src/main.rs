@@ -50,11 +50,13 @@ fn main() {
 
     // More temp code to test cc
     let mut i_cc = protocol::cc_out::CCDataMutex::new();
-    println!("{:?}", i_cc.cc_out_next_seq());
-    println!("{:?}", i_cc.cc_out_next_seq());
-    println!("{:?}", i_cc.cc_out_next_seq());
-    println!("{:?}", i_cc.cc_out_next_seq());
-    println!("{:?}", i_cc.cc_out_next_seq());
-    println!("{:?}", i_cc.cc_out_next_seq());
-    println!("{:?}", i_cc.cc_out_next_seq());
+    i_cc.cc_speed(2);
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+
 }

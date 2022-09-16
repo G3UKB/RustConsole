@@ -91,7 +91,7 @@ static mut CC_EL: [u8; 5] = [ 0x00, 0x00, 0x00, 0x00, 0x00 ];
 // These are read only.
 
 // Speed
-static CCO_SPEED_B: [u8; 4] = [ 0x00, 0x01, 0x10, 0x11 ];
+static CCO_SPEED_B: [u8; 4] = [ 0x00, 0x01, 0x02, 0x03 ];
 static CCO_SPEED_M: u8 = 0xfc;
 // 10MHz ref
 static CCO_10MHZ_REF_B: [u8; 3] = [ 0x00,0x04,0x08 ];
@@ -106,7 +106,7 @@ static CCO_BOARD_CONFIG_M: u8 = 0x9f;
 static CCO_MIC_SRC_B: [u8; 2] = [ 0x00,0x80 ];
 static CCO_MIC_SRC_M: u8 = 0x7f;
 // Alex attenuator
-static CCO_ALEX_ATTN_B: [u8; 4] = [ 0x00,0x01,0x10,0x11 ];
+static CCO_ALEX_ATTN_B: [u8; 4] = [ 0x00,0x01,0x02,0x03 ];
 static CCO_ALEX_ATTN_M: u8 = 0xfc;
 // Preamp
 static CCO_PREAMP_B: [u8; 2] = [ 0x00,0x04 ];
@@ -118,7 +118,7 @@ static CC0_RX_ANT_M: u8 = 0x9f;
 static CCO_ALEX_RX_OUT_B: [u8; 2] = [ 0x00,0x80 ];
 static CCO_ALEX_RX_OUT_M: u8 = 0x7f;
 // Alex TX relay
-static CCO_ALEX_TX_RLY_B: [u8; 3] = [ 0x00,0x01,0x10 ];
+static CCO_ALEX_TX_RLY_B: [u8; 3] = [ 0x00,0x01,0x02 ];
 static CCO_ALEX_TX_RLY_M: u8 = 0xfc;
 // Duplex
 static CCO_DUPLEX_B: [u8; 2] = [ 0x00,0x04 ];
@@ -198,17 +198,6 @@ impl CCData {
 		}
 	}
 
-	// Return the next CC data in sequence
-	/* 
-	pub fn cc_out_next_seq(&mut self) -> [u8; 5] {
-		self.cc_el = self.cc_array[self.cc_idx];
-		self.cc_idx = self.cc_idx + 1;
-		if self.cc_idx > RR_CC {
-			self.cc_idx = 0;
-		}
-	return self.cc_el.clone();
-	}
-	*/
 }
 
 pub struct CCDataMutex {
@@ -228,10 +217,26 @@ impl CCDataMutex {
 		
 		let mut m = self.ccdata_mutex.lock().unwrap();
 		m.cc_el = m.cc_array[m.cc_idx];
+		
+		// Check for MOX
+		if m.cc_idx == 0 {
+			if m .cc_mox_state {
+				// Need to set the MOX bit
+				m.cc_array[0] [0]= m.cc_array[0] [0] | 0x01;
+			}
+			else {
+				// Need to reset the MOX bit
+				m.cc_array[0] [0] = m.cc_array[0] [0] & 0xfe;
+			}
+		}
+
+		// Bump the index
 		m.cc_idx = m.cc_idx + 1;
 		if m.cc_idx > RR_CC {
 			m.cc_idx = 0;
 		}
+
+		// Return a copy of the current index array
 		return m.cc_el.clone();
 	}
 
@@ -239,12 +244,12 @@ impl CCDataMutex {
 	// Functions to manipulate fields in the cc_array
 
 	// Get the given byte at the given index in cc_array
-	fn cc_get_byte(mut m: MutexGuard<CCData>, array_idx: usize, byte_idx: usize) -> u8 {
+	fn cc_get_byte(m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize) -> u8 {
 		return m.cc_array[array_idx] [byte_idx];
 	}
 
 	// Overwrite the given byte at the given index in cc_array 
-	fn cc_put_byte(mut m: MutexGuard<CCData>, array_idx: usize, byte_idx: usize, b: u8) {
+	fn cc_put_byte(m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize, b: u8) {
 		m.cc_array[array_idx] [byte_idx] = b;
 	}
 
@@ -254,9 +259,32 @@ impl CCDataMutex {
 	}
 
 	// Update the given field in cc_array
-	fn cc_update(&mut self,array_idx: usize, byte_idx: usize) {
-		let mut m = self.ccdata_mutex.lock().unwrap();
+	fn cc_update(m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize, bit_setting: u8, bit_field: u8, bit_mask: u8) {
+		//let mut m = self.ccdata_mutex.lock().unwrap();
 		let b: u8 = CCDataMutex::cc_get_byte(m, array_idx, byte_idx);
+		let new_b: u8 = CCDataMutex::cc_set_bits(bit_setting, bit_field, bit_mask);
+		CCDataMutex::cc_put_byte(m, array_idx, byte_idx, new_b);
+	}
+
+	//==============================================================
+	// Setting functions for every bit field in cc_array
+
+	// Set/clear the MOX bit
+	pub fn cc_mox(&mut self, mox: bool) {
+		let mut m = self.ccdata_mutex.lock().unwrap();
+		if mox {
+			m.cc_mox_state = true;
+		} else {
+			m.cc_mox_state = false;
+		}
+	}
+
+	// Configuration settings
+	// Set the bandwidth
+	pub fn cc_speed(&mut self, speed: u8) {
+		let mut m = self.ccdata_mutex.lock().unwrap();
+		let setting = CCO_SPEED_B[speed as usize];
+		CCDataMutex::cc_update(&mut m, CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_SPEED_M);
 	}
 
 }
