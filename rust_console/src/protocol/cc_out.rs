@@ -259,11 +259,11 @@ impl CCDataMutex {
 	}
 
 	// Update the given field in cc_array
-	fn cc_update(m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize, bit_setting: u8, bit_field: u8, bit_mask: u8) {
-		//let mut m = self.ccdata_mutex.lock().unwrap();
-		let b: u8 = CCDataMutex::cc_get_byte(m, array_idx, byte_idx);
+	fn cc_update(&mut self, array_idx: usize, byte_idx: usize, bit_setting: u8, bit_field: u8, bit_mask: u8) {
+		let mut m = self.ccdata_mutex.lock().unwrap();
+		let b: u8 = CCDataMutex::cc_get_byte(&mut m, array_idx, byte_idx);
 		let new_b: u8 = CCDataMutex::cc_set_bits(bit_setting, bit_field, bit_mask);
-		CCDataMutex::cc_put_byte(m, array_idx, byte_idx, new_b);
+		CCDataMutex::cc_put_byte(&mut m, array_idx, byte_idx, new_b);
 	}
 
 	//==============================================================
@@ -282,9 +282,14 @@ impl CCDataMutex {
 	// Configuration settings
 	// Set the bandwidth
 	pub fn cc_speed(&mut self, speed: u8) {
-		let mut m = self.ccdata_mutex.lock().unwrap();
 		let setting = CCO_SPEED_B[speed as usize];
-		CCDataMutex::cc_update(&mut m, CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_SPEED_M);
+		CCDataMutex::cc_update( self, CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_SPEED_M);
+	}
+
+	// Set the 10MHz ref source
+	pub fn cc_10_ref(&mut self, reference: u8) {
+		let setting = CCO_10MHZ_REF_B[reference as usize];
+		CCDataMutex::cc_update(self, CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_10MHZ_REF_M);
 	}
 
 }
