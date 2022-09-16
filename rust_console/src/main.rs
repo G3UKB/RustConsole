@@ -49,7 +49,7 @@ fn main() {
     thread::sleep(Duration::from_millis(1000));
 
     // More temp code to test cc
-    let mut i_cc = protocol::cc_out::CCData::new();
+    let mut i_cc = protocol::cc_out::CCDataMutex::new();
     println!("{:?}", i_cc.cc_out_next_seq());
     println!("{:?}", i_cc.cc_out_next_seq());
     println!("{:?}", i_cc.cc_out_next_seq());

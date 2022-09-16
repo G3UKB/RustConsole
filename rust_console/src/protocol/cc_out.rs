@@ -25,7 +25,7 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::sync::Arc;
+use std::sync::Mutex;
 
 use crate::common::cc_out_defs;
 
@@ -164,7 +164,12 @@ static CCO_ALEX_hpf_1_5_M: u8 = 0xef;
 
 // The arrays that are modified by several threads/callers are wrapped in an Arc
 // allowing safe sharing.
+
 pub struct CCData{
+	// Current index into array
+	cc_idx: usize,
+	// Default MOX state
+	cc_mox_state: bool,
 	// Default array contains the C0 values that define how C1-C4 are defined
 	cc_array : [[u8; 5];7],
 	// Single row of the array is returned as next in sequence
@@ -175,7 +180,9 @@ pub struct CCData{
 impl CCData {
 	// Create a new instance and initialise the default arrays
 	pub fn new() -> CCData {
-		CCData {  
+		CCData {
+			cc_idx: 0,
+			cc_mox_state: false,
 			cc_array: (
 				[
 					[ 0x00, 0x00, 0x00, 0x00, 0x00 ],
@@ -192,14 +199,39 @@ impl CCData {
 	}
 
 	// Return the next CC data in sequence
+	/* 
 	pub fn cc_out_next_seq(&mut self) -> [u8; 5] {
-		unsafe {
-			self.cc_el = self.cc_array[CC_IDX];
-			CC_IDX = CC_IDX + 1;
-			if CC_IDX > RR_CC {
-				CC_IDX = 0;
-			}
-		};
-		return self.cc_el.clone();
+		self.cc_el = self.cc_array[self.cc_idx];
+		self.cc_idx = self.cc_idx + 1;
+		if self.cc_idx > RR_CC {
+			self.cc_idx = 0;
+		}
+	return self.cc_el.clone();
+	}
+	*/
+}
+
+pub struct CCDataMutex {
+	ccdata_mutex: Mutex<CCData>,
+} 
+
+impl CCDataMutex {
+	// Create a new instance and initialise the Mutex
+	pub fn new() -> CCDataMutex {
+		CCDataMutex {
+			ccdata_mutex: Mutex::new(CCData::new()),
+		}
+	}
+
+	// Return the next CC data in sequence
+	pub fn cc_out_next_seq(&mut self) -> [u8; 5] {
+		
+		let mut m = self.ccdata_mutex.lock().unwrap();
+		m.cc_el = m.cc_array[m.cc_idx];
+		m.cc_idx = m.cc_idx + 1;
+		if m.cc_idx > RR_CC {
+			m.cc_idx = 0;
+		}
+		return m.cc_el.clone();
 	}
 }
