@@ -26,7 +26,7 @@ bob@bobcowdery.plus.com
 */
 
 use std::sync::Mutex;
-
+use std::sync::MutexGuard;
 use crate::common::cc_out_defs;
 
 //========================================================================
@@ -234,4 +234,29 @@ impl CCDataMutex {
 		}
 		return m.cc_el.clone();
 	}
+
+	//==============================================================
+	// Functions to manipulate fields in the cc_array
+
+	// Get the given byte at the given index in cc_array
+	fn cc_get_byte(mut m: MutexGuard<CCData>, array_idx: usize, byte_idx: usize) -> u8 {
+		return m.cc_array[array_idx] [byte_idx];
+	}
+
+	// Overwrite the given byte at the given index in cc_array 
+	fn cc_put_byte(mut m: MutexGuard<CCData>, array_idx: usize, byte_idx: usize, b: u8) {
+		m.cc_array[array_idx] [byte_idx] = b;
+	}
+
+	// Given a target bit setting and the current bit field and mask return the modified field
+	fn cc_set_bits(bit_setting: u8, bit_field: u8, bit_mask: u8) -> u8 {
+		return (bit_field & bit_mask) | bit_setting;
+	}
+
+	// Update the given field in cc_array
+	fn cc_update(&mut self,array_idx: usize, byte_idx: usize) {
+		let mut m = self.ccdata_mutex.lock().unwrap();
+		let b: u8 = CCDataMutex::cc_get_byte(m, array_idx, byte_idx);
+	}
+
 }
