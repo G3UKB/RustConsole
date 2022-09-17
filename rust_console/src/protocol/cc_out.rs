@@ -283,13 +283,13 @@ impl CCDataMutex {
 	// Set the bandwidth
 	pub fn cc_speed(&mut self, speed: u8) {
 		let setting = CCO_SPEED_B[speed as usize];
-		CCDataMutex::cc_update( self, CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_SPEED_M);
+		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_SPEED_M);
 	}
 
 	// Set the 10MHz ref source
 	pub fn cc_10_ref(&mut self, reference: u8) {
 		let setting = CCO_10MHZ_REF_B[reference as usize];
-		CCDataMutex::cc_update(self, CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_10MHZ_REF_M);
+		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_10MHZ_REF_M);
 	}
 
 }
