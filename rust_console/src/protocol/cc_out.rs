@@ -27,7 +27,7 @@ bob@bobcowdery.plus.com
 
 use std::sync::Mutex;
 use std::sync::MutexGuard;
-use crate::common::cc_out_defs:: {CCOSpeed};
+use crate::common::cc_out_defs:: {CCOSpeed,CCO10MhzRef,CCO122MhzRef,CCOBoardConfig,CCOMicSrc,CCOAlexAttn,CCOPreamp,CCORxAnt,CCOAlexRxOut,CCOAlexTxRly,CCODuplex,CCONumRx,CCOAlexAuto};
 
 //========================================================================
 // Constants
@@ -265,67 +265,67 @@ impl CCDataMutex {
 	}
 
 	// Set the 10MHz ref source
-	pub fn cc_10_ref(&mut self, reference: u8) {
+	pub fn cc_10_ref(&mut self, reference: CCO10MhzRef) {
 		let setting = CCO_10MHZ_REF_B[reference as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_10MHZ_REF_M);
 	}
 
 	// Set the 122.88MHz ref source
-	pub fn cc_122_ref(&mut self, reference: u8) {
+	pub fn cc_122_ref(&mut self, reference: CCO122MhzRef) {
 		let setting = CCO_122MHZ_REF_B[reference as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_122MHZ_REF_M);
 	}
 
 	// Set the board config
-	pub fn cc_board_config(&mut self, config: u8) {
+	pub fn cc_board_config(&mut self, config: CCOBoardConfig) {
 		let setting = CCO_BOARD_CONFIG_B[config as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_BOARD_CONFIG_M);
 	}
 
 	// Set the mic src
-	pub fn cc_mic_src(&mut self, src: u8) {
+	pub fn cc_mic_src(&mut self, src: CCOMicSrc) {
 		let setting = CCO_MIC_SRC_B[src as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_MIC_SRC_M);
 	}
 
 	// Set the alex attenuator
-	pub fn cc_alex_attn(&mut self, attn: u8) {
+	pub fn cc_alex_attn(&mut self, attn: CCOAlexAttn) {
 		let setting = CCO_ALEX_ATTN_B[attn as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC3 as usize, setting, setting, CCO_ALEX_ATTN_M);
 	}
 
 	// Set the preamp
-	pub fn cc_preamp(&mut self, preamp: u8) {
+	pub fn cc_preamp(&mut self, preamp: CCOPreamp) {
 		let setting = CCO_PREAMP_B[preamp as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC3 as usize, setting, setting, CCO_PREAMP_M);
 	}
 
 	// Set the alex rx antenna
-	pub fn cc_alex_rx_ant(&mut self, ant: u8) {
+	pub fn cc_alex_rx_ant(&mut self, ant: CCORxAnt) {
 		let setting = CCO_RX_ANT_B[ant as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC3 as usize, setting, setting, CCO_RX_ANT_M);
 	}
 
 	// Set the alex rx output
-	pub fn cc_alex_rx_out(&mut self, out: u8) {
+	pub fn cc_alex_rx_out(&mut self, out: CCOAlexRxOut) {
 		let setting = CCO_ALEX_RX_OUT_B[out as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC3 as usize, setting, setting, CCO_ALEX_RX_OUT_M);
 	}
 
 	// Set the alex tx relay
-	pub fn cc_alex_tx_rly(&mut self, rly: u8) {
+	pub fn cc_alex_tx_rly(&mut self, rly: CCOAlexTxRly) {
 		let setting = CCO_ALEX_TX_RLY_B[rly as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC4 as usize, setting, setting, CCO_ALEX_TX_RLY_M);
 	}
 
 	// Set duplex
-	pub fn cc_duplex(&mut self, duplex: u8) {
+	pub fn cc_duplex(&mut self, duplex: CCODuplex) {
 		let setting = CCO_DUPLEX_B[duplex as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC4 as usize, setting, setting, CCO_DUPLEX_M);
 	}
 
 	// Set num rx
-	pub fn cc_num_rx(&mut self, num: u8) {
+	pub fn cc_num_rx(&mut self, num: CCONumRx) {
 		let setting = CCO_DUPLEX_B[num as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC4 as usize, setting, setting, CCO_DUPLEX_M);
 	}
@@ -334,7 +334,7 @@ impl CCDataMutex {
 	// Alex filters
 
 	// Set the alex auto mode
-	pub fn cc_alex_auto(&mut self, auto: u8) {
+	pub fn cc_alex_auto(&mut self, auto: CCOAlexAuto) {
 		let setting = CCO_ALEX_AUTO_B[auto as usize];
 		self.cc_update(CCOBufferIdx::BMisc1 as usize, CCOByteIdx::CC2 as usize, setting, setting, CCO_ALEX_AUTO_M);
 	}
@@ -410,10 +410,57 @@ impl CCDataMutex {
 	}
 
 	//========================================
+	// Frequency setting
+
+	// Slightly different from the single fields as frequency is a 4 byte field
+	// The common setting function
+	fn cc_common_set_freq(&mut self, buffer_idx: CCOBufferIdx, freq_in_hz: u32) {
+		let mut m = self.ccdata_mutex.lock().unwrap();
+		let mut array_at_idx = m.cc_array[buffer_idx as usize];
+		array_at_idx[1] = ((freq_in_hz >> 24) & 0xff) as u8;
+		array_at_idx[2] = ((freq_in_hz >> 16) & 0xff) as u8;
+		array_at_idx[3] = ((freq_in_hz >> 8) & 0xff) as u8;
+		array_at_idx[4] = (freq_in_hz & 0xff) as u8;
+	}
+
+	//There are several frequencies for RX 1/TX and RX 2,3,4
+	// RX 1/TX freq
+	pub fn cc_set_rx_tx_freq(&mut self, freq_in_hz: u32) {
+		self.cc_common_set_freq(CCOBufferIdx::BRx1TxF, freq_in_hz);
+		self.cc_common_set_freq(CCOBufferIdx::BRx1F, freq_in_hz);
+	}
+	// RX 2 freq
+	pub fn cc_set_rx2_freq(&mut self, freq_in_hz: u32) {
+		self.cc_common_set_freq(CCOBufferIdx::BRx2F, freq_in_hz);
+	}
+	// RX 3 freq
+	pub fn cc_set_rx3_freq(&mut self, freq_in_hz: u32) {
+		self.cc_common_set_freq(CCOBufferIdx::BRx3F, freq_in_hz);
+	}
+	// TX freq
+	pub fn cc_set_tx_freq(&mut self, freq_in_hz: u32) {
+		self.cc_common_set_freq(CCOBufferIdx::BRx1TxF, freq_in_hz);
+	}
+
+	//========================================
 	// Set sensible initialisation values
 	pub fn cc_init(&mut self) {
 		self.cc_mox(false);
 		self.cc_speed(CCOSpeed::S48kHz);
+
+		self.cc_10_ref(CCO10MhzRef::R10MHzMerc);
+		self.cc_122_ref(CCO122MhzRef::R122MHzMerc);
+		self.cc_board_config(CCOBoardConfig::BoardBoth);
+		self.cc_mic_src(CCOMicSrc::MicPen);
+		self.cc_alex_attn(CCOAlexAttn::Attn0db);
+		self.cc_preamp(CCOPreamp::PreAmpOff );
+		self.cc_alex_rx_ant(CCORxAnt::RxAntNone);
+		self.cc_alex_rx_out(CCOAlexRxOut::RxOutOff );
+		self.cc_alex_tx_rly(CCOAlexTxRly::TxRlyTx1);
+		self.cc_duplex(CCODuplex::DuplexOff);
+		self.cc_num_rx(CCONumRx::NumRx1);
+		self.cc_set_rx_tx_freq(7150000);
+		self.cc_set_tx_freq(7150000);
 	}
 
 }
