@@ -30,6 +30,7 @@ use std::time::Duration;
 pub mod udp;
 pub mod common;
 pub mod protocol;
+use common::cc_out_defs:: {CCOSpeed};
 
 /// Entry point for RustConsole SDR application
 ///
@@ -50,7 +51,7 @@ fn main() {
 
     // More temp code to test cc
     let mut i_cc = protocol::cc_out::CCDataMutex::new();
-    i_cc.cc_speed(2);
+    i_cc.cc_speed(CCOSpeed::S96kHz);
     println!("{:#02x?}", i_cc.cc_out_next_seq());
     println!("{:#02x?}", i_cc.cc_out_next_seq());
     println!("{:#02x?}", i_cc.cc_out_next_seq());

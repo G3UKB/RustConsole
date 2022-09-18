@@ -27,7 +27,7 @@ bob@bobcowdery.plus.com
 
 use std::sync::Mutex;
 use std::sync::MutexGuard;
-use crate::common::cc_out_defs;
+use crate::common::cc_out_defs:: {CCOSpeed};
 
 //========================================================================
 // Constants
@@ -56,30 +56,6 @@ enum CCOByteIdx {
 	CC3,
 	CC4
 }
-
-//========================================================================
-// State variables
-
-// Current indux into array
-static mut CC_IDX: usize = 0;
-// Default MOX state
-static mut CC_MOX_STATE: bool = false;
-
-/* 
-static mut CC_ARRAY: [[u8; 5];7] = 
-[
-	[ 0x00, 0x00, 0x00, 0x00, 0x00 ],
-	[ 0x02, 0x00, 0x00, 0x00, 0x00 ],
-	[ 0x04, 0x00, 0x00, 0x00, 0x00 ],
-	[ 0x06, 0x00, 0x00, 0x00, 0x00 ],
-	[ 0x08, 0x00, 0x00, 0x00, 0x00 ],
-	[ 0x12, 0x00, 0x00, 0x00, 0x00 ],
-	[ 0x14, 0x00, 0x00, 0x00, 0x00 ],
-];
-
-// Single row of the array is returned as next in sequence
-static mut CC_EL: [u8; 5] = [ 0x00, 0x00, 0x00, 0x00, 0x00 ];
-*/
 
 //========================================================================
 // For each field in C2 - C4 we define the bits to set for the number of values for that setting.
@@ -244,26 +220,26 @@ impl CCDataMutex {
 	// Functions to manipulate fields in the cc_array
 
 	// Get the given byte at the given index in cc_array
-	fn cc_get_byte(m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize) -> u8 {
+	fn cc_get_byte(&self, m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize) -> u8 {
 		return m.cc_array[array_idx] [byte_idx];
 	}
 
 	// Overwrite the given byte at the given index in cc_array 
-	fn cc_put_byte(m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize, b: u8) {
+	fn cc_put_byte(&self, m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize, b: u8) {
 		m.cc_array[array_idx] [byte_idx] = b;
 	}
 
 	// Given a target bit setting and the current bit field and mask return the modified field
-	fn cc_set_bits(bit_setting: u8, bit_field: u8, bit_mask: u8) -> u8 {
+	fn cc_set_bits(&self, bit_setting: u8, bit_field: u8, bit_mask: u8) -> u8 {
 		return (bit_field & bit_mask) | bit_setting;
 	}
 
 	// Update the given field in cc_array
 	fn cc_update(&mut self, array_idx: usize, byte_idx: usize, bit_setting: u8, bit_field: u8, bit_mask: u8) {
 		let mut m = self.ccdata_mutex.lock().unwrap();
-		let b: u8 = CCDataMutex::cc_get_byte(&mut m, array_idx, byte_idx);
-		let new_b: u8 = CCDataMutex::cc_set_bits(bit_setting, bit_field, bit_mask);
-		CCDataMutex::cc_put_byte(&mut m, array_idx, byte_idx, new_b);
+		let b: u8 = self.cc_get_byte(&mut m, array_idx, byte_idx);
+		let new_b: u8 = self.cc_set_bits(bit_setting, bit_field, bit_mask);
+		self.cc_put_byte(&mut m, array_idx, byte_idx, new_b);
 	}
 
 	//==============================================================
@@ -279,9 +255,10 @@ impl CCDataMutex {
 		}
 	}
 
+	//========================================
 	// Configuration settings
 	// Set the bandwidth
-	pub fn cc_speed(&mut self, speed: u8) {
+	pub fn cc_speed(&mut self, speed: CCOSpeed) {
 		let setting = CCO_SPEED_B[speed as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_SPEED_M);
 	}
@@ -290,6 +267,13 @@ impl CCDataMutex {
 	pub fn cc_10_ref(&mut self, reference: u8) {
 		let setting = CCO_10MHZ_REF_B[reference as usize];
 		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC1 as usize, setting, setting, CCO_10MHZ_REF_M);
+	}
+
+	//========================================
+	// Set sensible initialisation values
+	pub fn cc_init(&mut self) {
+		self.cc_mox(false);
+		self.cc_speed(CCOSpeed::S48kHz);
 	}
 
 }
