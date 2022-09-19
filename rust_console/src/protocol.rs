@@ -24,6 +24,7 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
+pub mod seq_man;
 pub mod decoder;
 pub mod encoder;
 pub mod cc_in;
