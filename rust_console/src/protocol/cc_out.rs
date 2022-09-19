@@ -245,8 +245,13 @@ impl CCDataMutex {
 	fn cc_update(&mut self, array_idx: usize, byte_idx: usize, bit_setting: u8, bit_mask: u8) {
 		let mut m = self.ccdata_mutex.lock().unwrap();
 		let b: u8 = Self::cc_get_byte(&mut m, array_idx, byte_idx);
-		let new_b: u8 = Self::cc_set_bits(b, bit_setting, bit_mask);
+		let new_b: u8 = Self::cc_set_bits(bit_setting, b, bit_mask);
 		Self::cc_put_byte(&mut m, array_idx, byte_idx, new_b);
+	}
+
+	pub fn cc_print(&mut self) {
+		let mut m = self.ccdata_mutex.lock().unwrap();
+		println!("{:#02x?}", m.cc_array);
 	}
 
 	//==============================================================
@@ -423,11 +428,11 @@ impl CCDataMutex {
 	// The common setting function
 	fn cc_common_set_freq(&mut self, buffer_idx: CCOBufferIdx, freq_in_hz: u32) {
 		let mut m = self.ccdata_mutex.lock().unwrap();
-		let mut array_at_idx = m.cc_array[buffer_idx as usize];
-		array_at_idx[1] = ((freq_in_hz >> 24) & 0xff) as u8;
-		array_at_idx[2] = ((freq_in_hz >> 16) & 0xff) as u8;
-		array_at_idx[3] = ((freq_in_hz >> 8) & 0xff) as u8;
-		array_at_idx[4] = (freq_in_hz & 0xff) as u8;
+		let idx = buffer_idx as usize;
+		m.cc_array[idx][1] = ((freq_in_hz >> 24) & 0xff) as u8;
+		m.cc_array[idx][2] = ((freq_in_hz >> 16) & 0xff) as u8;
+		m.cc_array[idx][3] = ((freq_in_hz >> 8) & 0xff) as u8;
+		m.cc_array[idx][4] = (freq_in_hz & 0xff) as u8;
 	}
 
 	//There are several frequencies for RX 1/TX and RX 2,3,4
@@ -453,8 +458,7 @@ impl CCDataMutex {
 	// Set sensible initialisation values
 	pub fn cc_init(&mut self) {
 		self.cc_mox(false);
-		self.cc_speed(CCOSpeed::S48kHz);
-
+		self.cc_speed(CCOSpeed::S96kHz);
 		self.cc_10_ref(CCO10MhzRef::R10MHzMerc);
 		self.cc_122_ref(CCO122MhzRef::R122MHzMerc);
 		self.cc_board_config(CCOBoardConfig::BoardBoth);
@@ -466,7 +470,7 @@ impl CCDataMutex {
 		self.cc_alex_tx_rly(CCOAlexTxRly::TxRlyTx1);
 		self.cc_duplex(CCODuplex::DuplexOff);
 		self.cc_num_rx(CCONumRx::NumRx1);
-		self.cc_alex_auto(auto: CCOAlexAuto::AlexAuto);
+		self.cc_alex_auto(CCOAlexAuto::AlexAuto);
 		self.cc_set_rx_tx_freq(7150000);
 		self.cc_set_tx_freq(7150000);
 	}
