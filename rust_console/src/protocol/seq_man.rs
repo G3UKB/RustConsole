@@ -55,7 +55,7 @@ impl SeqData {
             ep4_seq: 0,
             ep6_seq_check: 0,
             ep6_init: false,
-            big_endian_seq: [0,0,0,0],
+            big_endian_seq: ([0,0,0,0]),
 		}
 	}
 
@@ -77,10 +77,11 @@ impl SeqData {
         let new_seq = self.big_to_little_endian((seq));
         if !self.ep6_init {
             self.ep6_seq_check = new_seq;
+            self.ep6_init = true;
         } else if new_seq == 0 { 
             self.ep6_seq_check = 0;
         } else if self.ep6_seq_check + 1 != new_seq {
-            println!("EP6 sequence error");
+            println!("EP6 sequence error - Ex:{}, Got:{}", self.ep6_seq_check, new_seq);
             self.ep6_seq_check = 0;
         } else {
             self.ep6_seq_check = self.ep6_seq_check + 1;

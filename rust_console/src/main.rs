@@ -32,6 +32,8 @@ pub mod common;
 pub mod protocol;
 use common::cc_out_defs:: {CCOSpeed};
 
+use crate::protocol::seq_man::SeqData;
+
 /// Entry point for RustConsole SDR application
 ///
 /// # Examples
@@ -52,13 +54,23 @@ fn main() {
     // More temp code to test cc
     let mut i_cc = protocol::cc_out::CCDataMutex::new();
     i_cc.cc_init();
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+    println!("{:#02x?}", i_cc.cc_out_next_seq());
+
+    // Ditto to test seq no
+    let mut i_seq: SeqData = protocol::seq_man::SeqData::new();
+    println!("{:#02x?}", i_seq.next_ep2_seq());
+    println!("{:#02x?}", i_seq.next_ep2_seq());
+    println!("{:#02x?}", i_seq.next_ep4_seq());
+    println!("{:#02x?}", i_seq.next_ep4_seq());
+    i_seq.check_ep6_seq([0,0,0,0]);
+    i_seq.check_ep6_seq([0,0,0,10]);
+    i_seq.check_ep6_seq([0,0,0,255]);
     
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
     
 }

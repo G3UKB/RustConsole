@@ -1,8 +1,8 @@
 /*
-udp_writer.rs
+common_defs.rs
+module common_defs
 
-Module - udp_writer
-Manages write data over UDP to the SDR hardware
+Common defs for application
 
 Copyright (C) 2022 by G3UKB Bob Cowdery
 
@@ -25,29 +25,5 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::thread;
-use std::time::Duration;
-use socket2;
-use std::sync::Arc;
-
-use crate::common::common_defs;
-use crate::protocol;
-
-pub struct UDPWData{
-	sock2 : Arc<socket2::Socket>,
-    udp_frame : [u8; common_defs::FRAME_SZ],
-    prot_frame : [u8; common_defs::PROT_SZ*2],
-}
-
-// Implementation methods on CCData
-impl UDPWData {
-	// Create a new instance and initialise the default arrays
-	pub fn new(p_sock : Arc<socket2::Socket>) -> UDPWData {
-		UDPWData {
-			sock2: p_sock,
-            udp_frame: [0; common_defs::FRAME_SZ],
-            prot_frame: [0; common_defs::PROT_SZ*2],
-		}
-	}
-
-}
+pub const FRAME_SZ : usize = 1032;
+pub const PROT_SZ : usize = 504;

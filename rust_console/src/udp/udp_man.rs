@@ -40,8 +40,6 @@ use crossbeam_channel::unbounded;
 pub struct UDPdata{
     pub r_sender : crossbeam_channel::Sender<messages::ReaderMsg>,
     pub r_receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
-    pub w_sender : crossbeam_channel::Sender<messages::WriterMsg>,
-    pub w_receiver : crossbeam_channel::Receiver<messages::WriterMsg>,
     pub hw_sender : crossbeam_channel::Sender<messages::HWMsg>,
     pub hw_receiver : crossbeam_channel::Receiver<messages::HWMsg>,
 }
@@ -49,20 +47,17 @@ pub struct UDPdata{
 impl UDPdata {
     pub fn new() -> UDPdata {
         let (r_s, r_r) = unbounded();
-        let (w_s, w_r) = unbounded();
         let (hw_s, hw_r) = unbounded();
         UDPdata {  
             r_sender : r_s,
             r_receiver : r_r,
-            w_sender : w_s,
-            w_receiver : w_r,
             hw_sender : hw_s,
             hw_receiver : hw_r,
         }
     }
 
     pub fn udp_init(&mut self) {
-        println!("Initialising UDP threads");
+        println!("Initialising UDP modules");
         let mut i_socket = udp_socket::Sockdata::new();
         let p_sock = i_socket.udp_sock_ref();
 
@@ -70,7 +65,7 @@ impl UDPdata {
         udp_reader::reader_start(self.r_receiver.clone(), arc);
 
         let arc1 = p_sock.clone();
-        udp_writer::writer_start(self.w_receiver.clone(), arc1);
+        let mut i_udp_writer = udp_writer::UDPWData::new(arc1);
 
         let arc2 = p_sock.clone();
         hw_control::hw_control_start(self.hw_receiver.clone(), arc2);
@@ -86,7 +81,6 @@ impl UDPdata {
 
     pub fn udp_close(&mut self) {
         self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
-        self.w_sender.send(messages::WriterMsg::Terminate).unwrap();
         self.hw_sender.send(messages::HWMsg::Terminate).unwrap();
     }
 }
