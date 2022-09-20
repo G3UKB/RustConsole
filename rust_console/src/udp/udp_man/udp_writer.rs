@@ -37,14 +37,18 @@ pub struct UDPWData{
 	sock2 : Arc<socket2::Socket>,
     udp_frame : [u8; common_defs::FRAME_SZ],
     prot_frame : [u8; common_defs::PROT_SZ*2],
-    pub i_cc: Arc<protocol::cc_out::CCDataMutex>,
-    pub i_seq: Arc<protocol::seq_man::SeqData>,
+    //pub i_cc: Arc<protocol::cc_out::CCDataMutex>,
+    //pub i_seq: Arc<protocol::seq_man::SeqData>,
+    pub i_cc: protocol::cc_out::CCDataMutex,
+    pub i_seq: protocol::seq_man::SeqData,
 }
 
 // Implementation methods on CCData
 impl UDPWData {
 	// Create a new instance and initialise the default arrays
-	pub fn new(p_sock : Arc<socket2::Socket>, i_seq: Arc<protocol::seq_man::SeqData>, i_cc: Arc<protocol::cc_out::CCDataMutex>) -> UDPWData {
+	//pub fn new(p_sock : Arc<socket2::Socket>, i_seq: Arc<protocol::seq_man::SeqData>, i_cc: Arc<protocol::cc_out::CCDataMutex>) -> UDPWData {
+    pub fn new(p_sock : Arc<socket2::Socket>, i_seq: protocol::seq_man::SeqData, i_cc: protocol::cc_out::CCDataMutex) -> UDPWData {
+    //pub fn new(p_sock : Arc<socket2::Socket>) -> UDPWData {
 		UDPWData {
 			sock2: p_sock,
             udp_frame: [0; common_defs::FRAME_SZ],
@@ -79,7 +83,7 @@ impl UDPWData {
         self.prot_frame[3] = common_defs::EP2;
 
         // Encode sequence number
-        //let next_cc = self.i_cc.cc_out_next_seq();
-        //let next_seq = self.i_seq.next_ep2_seq();
+        let next_cc = self.i_cc.cc_out_next_seq();
+        let next_seq = self.i_seq.next_ep2_seq();
     }
 }

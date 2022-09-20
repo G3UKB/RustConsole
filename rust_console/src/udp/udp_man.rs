@@ -44,12 +44,15 @@ pub struct UDPdata{
     pub r_receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
     pub hw_sender : crossbeam_channel::Sender<messages::HWMsg>,
     pub hw_receiver : crossbeam_channel::Receiver<messages::HWMsg>,
-    pub i_cc: Arc<protocol::cc_out::CCDataMutex>,
-    pub i_seq: Arc<protocol::seq_man::SeqData>,
+    //pub i_cc: Arc<protocol::cc_out::CCDataMutex>,
+    //pub i_seq: Arc<protocol::seq_man::SeqData>,
+    pub i_cc: protocol::cc_out::CCDataMutex,
+    pub i_seq: protocol::seq_man::SeqData,
 }
 
 impl UDPdata {
-    pub fn new(i_seq: Arc<protocol::seq_man::SeqData>, i_cc: Arc<protocol::cc_out::CCDataMutex>) -> UDPdata {
+    //pub fn new(i_seq: Arc<protocol::seq_man::SeqData>, i_cc: Arc<protocol::cc_out::CCDataMutex>) -> UDPdata {
+    pub fn new(i_seq: protocol::seq_man::SeqData, i_cc: protocol::cc_out::CCDataMutex) -> UDPdata {
         let (r_s, r_r) = unbounded();
         let (hw_s, hw_r) = unbounded();
         UDPdata {  
@@ -71,7 +74,10 @@ impl UDPdata {
         udp_reader::reader_start(self.r_receiver.clone(), arc);
 
         let arc1 = p_sock.clone();
-        let mut i_udp_writer = udp_writer::UDPWData::new(arc1, self.i_seq.clone(), self.i_cc.clone());
+        //let mut i_udp_writer = udp_writer::UDPWData::new(arc1, self.i_seq.clone, self.i_cc.clone());
+        let mut i_udp_writer = udp_writer::UDPWData::new(arc1, self.i_seq, self.i_cc);
+        println!("{:#02x?}", self.i_seq.next_ep2_seq());
+        //let mut i_udp_writer = udp_writer::UDPWData::new(arc1);
 
         let arc2 = p_sock.clone();
         hw_control::hw_control_start(self.hw_receiver.clone(), arc2);

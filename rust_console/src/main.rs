@@ -43,13 +43,15 @@ fn main() {
     println!("Starting Rust Console...");
 
     // Create an instance of the cc_out type
-    let mut i_cc = protocol::cc_out::CCDataMutex::new();
+    let i_cc = protocol::cc_out::CCDataMutex::new();
 
     // Create an instance of the sequence type
-    let mut i_seq: SeqData = protocol::seq_man::SeqData::new();
+    let i_seq: SeqData = protocol::seq_man::SeqData::new();
 
     // Create an instance of the UDPdata type
-    let mut i_udp = udp::udp_man::UDPdata::new(Arc::new(i_seq), Arc::new(i_cc));
+    //let mut i_udp = udp::udp_man::UDPdata::new(Arc::new(i_seq), Arc::new(i_cc));
+    let mut i_udp = udp::udp_man::UDPdata::new(i_seq, i_cc);
+
     // Announce udp module and initialise it
     i_udp.udp_init();   // This will run the reader and writer threads
 
