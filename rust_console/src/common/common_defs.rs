@@ -27,3 +27,6 @@ bob@bobcowdery.plus.com
 
 pub const FRAME_SZ : usize = 1032;
 pub const PROT_SZ : usize = 504;
+
+pub const EP2 : u8 = 0x02;
+pub const DATA_PKT : u8 = 0x01;

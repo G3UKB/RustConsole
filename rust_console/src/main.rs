@@ -26,6 +26,7 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
+use std::sync::Arc;
 
 pub mod udp;
 pub mod common;
@@ -39,18 +40,25 @@ use crate::protocol::seq_man::SeqData;
 /// # Examples
 ///
 fn main() {
-    println!("Starting RustConsole...");
+    println!("Starting Rust Console...");
+
+    // Create an instance of the cc_out type
+    let mut i_cc = protocol::cc_out::CCDataMutex::new();
+
+    // Create an instance of the sequence type
+    let mut i_seq: SeqData = protocol::seq_man::SeqData::new();
 
     // Create an instance of the UDPdata type
-    let mut i_udp = udp::udp_man::UDPdata::new();
+    let mut i_udp = udp::udp_man::UDPdata::new(Arc::new(i_seq), Arc::new(i_cc));
     // Announce udp module and initialise it
     i_udp.udp_init();   // This will run the reader and writer threads
 
     // Temporary code to wait a while then close everything and exit
     thread::sleep(Duration::from_millis(5000));
-    udp::udp_man::UDPdata::udp_close(&mut i_udp);
+    i_udp.udp_close();
     thread::sleep(Duration::from_millis(1000));
 
+    /* 
     // More temp code to test cc
     let mut i_cc = protocol::cc_out::CCDataMutex::new();
     i_cc.cc_init();
@@ -71,6 +79,6 @@ fn main() {
     i_seq.check_ep6_seq([0,0,0,0]);
     i_seq.check_ep6_seq([0,0,0,10]);
     i_seq.check_ep6_seq([0,0,0,255]);
-    
+    */
     
 }
