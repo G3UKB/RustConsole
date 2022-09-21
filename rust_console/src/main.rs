@@ -26,14 +26,10 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
-use std::sync::Arc;
 
 pub mod udp;
 pub mod common;
 pub mod protocol;
-use common::cc_out_defs:: {CCOSpeed};
-
-use crate::protocol::seq_man::SeqData;
 
 /// Entry point for RustConsole SDR application
 ///
@@ -42,45 +38,17 @@ use crate::protocol::seq_man::SeqData;
 fn main() {
     println!("Starting Rust Console...");
 
-    // Create an instance of the cc_out type
-    let i_cc = protocol::cc_out::CCDataMutex::new();
+    // Create an instance of the UDPdata manager type
+    let mut i_udp = udp::udp_man::UDPdata::new();
 
-    // Create an instance of the sequence type
-    let i_seq: SeqData = protocol::seq_man::SeqData::new();
-
-    // Create an instance of the UDPdata type
-    //let mut i_udp = udp::udp_man::UDPdata::new(Arc::new(i_seq), Arc::new(i_cc));
-    let mut i_udp = udp::udp_man::UDPdata::new(i_seq, i_cc);
-
-    // Announce udp module and initialise it
-    i_udp.udp_init();   // This will run the reader and writer threads
+    // Initialise UDP module
+    // This will run the reader and writer and subordinate modules
+    i_udp.udp_init();
 
     // Temporary code to wait a while then close everything and exit
     thread::sleep(Duration::from_millis(5000));
+    println!("Rust console closing...");
     i_udp.udp_close();
     thread::sleep(Duration::from_millis(1000));
-
-    /* 
-    // More temp code to test cc
-    let mut i_cc = protocol::cc_out::CCDataMutex::new();
-    i_cc.cc_init();
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-    println!("{:#02x?}", i_cc.cc_out_next_seq());
-
-    // Ditto to test seq no
-    let mut i_seq: SeqData = protocol::seq_man::SeqData::new();
-    println!("{:#02x?}", i_seq.next_ep2_seq());
-    println!("{:#02x?}", i_seq.next_ep2_seq());
-    println!("{:#02x?}", i_seq.next_ep4_seq());
-    println!("{:#02x?}", i_seq.next_ep4_seq());
-    i_seq.check_ep6_seq([0,0,0,0]);
-    i_seq.check_ep6_seq([0,0,0,10]);
-    i_seq.check_ep6_seq([0,0,0,255]);
-    */
     
 }

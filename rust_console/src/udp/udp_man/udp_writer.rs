@@ -25,8 +25,6 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::thread;
-use std::time::Duration;
 use socket2;
 use std::sync::Arc;
 
@@ -40,15 +38,18 @@ pub struct UDPWData{
     //pub i_cc: Arc<protocol::cc_out::CCDataMutex>,
     //pub i_seq: Arc<protocol::seq_man::SeqData>,
     pub i_cc: protocol::cc_out::CCDataMutex,
-    pub i_seq: protocol::seq_man::SeqData,
+    pub i_seq: protocol::seq_out::SeqData,
 }
 
 // Implementation methods on CCData
 impl UDPWData {
 	// Create a new instance and initialise the default arrays
-	//pub fn new(p_sock : Arc<socket2::Socket>, i_seq: Arc<protocol::seq_man::SeqData>, i_cc: Arc<protocol::cc_out::CCDataMutex>) -> UDPWData {
-    pub fn new(p_sock : Arc<socket2::Socket>, i_seq: protocol::seq_man::SeqData, i_cc: protocol::cc_out::CCDataMutex) -> UDPWData {
-    //pub fn new(p_sock : Arc<socket2::Socket>) -> UDPWData {
+	pub fn new(p_sock : Arc<socket2::Socket>) -> UDPWData {
+        // Create an instance of the cc_out type
+        let i_cc = protocol::cc_out::CCDataMutex::new();
+        // Create an instance of the sequence type
+        let i_seq = protocol::seq_out::SeqData::new();
+
 		UDPWData {
 			sock2: p_sock,
             udp_frame: [0; common_defs::FRAME_SZ],
@@ -58,32 +59,7 @@ impl UDPWData {
 		}
 	}
 
-    /*
-	*	<0xEFFE><0x01><End Point><Sequence Number>< 2 x HPSDR frames>
-	*	Where:
-	*		End point = 1 byte[0x02 – representing USB EP2]
-	*		Sequence Number = 4 bytes[32 bit unsigned]
-	*		HPSDR data = 1024 bytes[2 x 512 byte USB format frames]
-	*
-	*	The following fields are merged :
-	*		metis_header
-	*		out_seq		-- next output sequence number to use
-	*		cc_out 		-- round robin control bytes
-	*		usb_header +
-	*		proc_data	-- 2 frames worth of USB format frames
-	*
-	*	Data is encoded into the packet buffer
-	*/
-    fn encode(&mut self) {
-
-        // Encode header
-        self.prot_frame[0] = 0xef;
-        self.prot_frame[1] = 0xfe;
-        self.prot_frame[2] = common_defs::DATA_PKT;
-        self.prot_frame[3] = common_defs::EP2;
-
-        // Encode sequence number
-        let next_cc = self.i_cc.cc_out_next_seq();
-        let next_seq = self.i_seq.next_ep2_seq();
+    pub fn prime(&mut self) {
+        protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
     }
 }

@@ -36,59 +36,68 @@ use std::time::Duration;
 use std::sync::Arc;
 
 use crate::common::messages;
-use crate::protocol;
+
+use socket2;
 use crossbeam_channel::unbounded;
 
 pub struct UDPdata{
+    pub i_sock : udp_socket::Sockdata,
+    pub p_sock : Arc<socket2::Socket>,
+    pub i_udp_writer : udp_writer::UDPWData,
     pub r_sender : crossbeam_channel::Sender<messages::ReaderMsg>,
     pub r_receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
     pub hw_sender : crossbeam_channel::Sender<messages::HWMsg>,
     pub hw_receiver : crossbeam_channel::Receiver<messages::HWMsg>,
-    //pub i_cc: Arc<protocol::cc_out::CCDataMutex>,
-    //pub i_seq: Arc<protocol::seq_man::SeqData>,
-    pub i_cc: protocol::cc_out::CCDataMutex,
-    pub i_seq: protocol::seq_man::SeqData,
+    //pub p_sock : Arc<socket2::Socket>,
+    //pub i_udp_writer : udp_writer::UDPWData,
 }
 
 impl UDPdata {
-    //pub fn new(i_seq: Arc<protocol::seq_man::SeqData>, i_cc: Arc<protocol::cc_out::CCDataMutex>) -> UDPdata {
-    pub fn new(i_seq: protocol::seq_man::SeqData, i_cc: protocol::cc_out::CCDataMutex) -> UDPdata {
+    pub fn new() -> UDPdata {
+        let mut i_sock = udp_socket::Sockdata::new();
+        let p_sock = i_sock.udp_sock_ref();
+        let arc1 = p_sock.clone();
+        let mut i_udp_writer = udp_writer::UDPWData::new(arc1);
         let (r_s, r_r) = unbounded();
         let (hw_s, hw_r) = unbounded();
-        UDPdata {  
+        UDPdata { 
+            i_sock : i_sock,
+            p_sock : p_sock, 
+            i_udp_writer : i_udp_writer,
             r_sender : r_s,
             r_receiver : r_r,
             hw_sender : hw_s,
             hw_receiver : hw_r,
-            i_cc : i_cc,
-            i_seq : i_seq,
+            
+            //i_udp_writer : i_udp_writer,
         }
     }
 
     pub fn udp_init(&mut self) {
         println!("Initialising UDP modules");
-        let mut i_socket = udp_socket::Sockdata::new();
-        let p_sock = i_socket.udp_sock_ref();
+        //let mut i_socket = udp_socket::Sockdata::new();
+        //let p_sock = i_socket.udp_sock_ref();
 
-        let arc = p_sock.clone();
+        let arc = self.p_sock.clone();
         udp_reader::reader_start(self.r_receiver.clone(), arc);
 
-        let arc1 = p_sock.clone();
-        //let mut i_udp_writer = udp_writer::UDPWData::new(arc1, self.i_seq.clone, self.i_cc.clone());
-        let mut i_udp_writer = udp_writer::UDPWData::new(arc1, self.i_seq, self.i_cc);
-        println!("{:#02x?}", self.i_seq.next_ep2_seq());
+        //let arc1 = self.p_sock.clone();
         //let mut i_udp_writer = udp_writer::UDPWData::new(arc1);
 
-        let arc2 = p_sock.clone();
+        let arc2 = self.p_sock.clone();
         hw_control::hw_control_start(self.hw_receiver.clone(), arc2);
 
+        //************ 
         // Test
         self.hw_sender.send(messages::HWMsg::DiscoverHw).unwrap();
         thread::sleep(Duration::from_millis(1000));
-        i_socket.udp_revert_socket();
+        self.i_sock.udp_revert_socket();
         self.hw_sender.send(messages::HWMsg::StartHw).unwrap();
         thread::sleep(Duration::from_millis(1000));
         self.hw_sender.send(messages::HWMsg::StopHw).unwrap();
+        // Call prime to init the hardware
+        self.i_udp_writer.prime();
+
     }
 
     pub fn udp_close(&mut self) {
