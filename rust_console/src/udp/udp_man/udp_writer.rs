@@ -61,5 +61,6 @@ impl UDPWData {
 
     pub fn prime(&mut self) {
         protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
+        println!("{:02x?}", self.udp_frame);
     }
 }

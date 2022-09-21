@@ -61,45 +61,46 @@ pub fn encode(  i_seq: &mut protocol::seq_out::SeqData,
     let next_seq = i_seq.next_ep2_seq();
     let mut j: usize = 0;
     for i in FRAME_SEQ_OFFSET..FRAME_SEQ_OFFSET + 4 {
-        prot_frame[i as usize] = next_seq[j];
+        udp_frame[i as usize] = next_seq[j];
         j = j+1;
     }
 
     // First protocol frame
     // Header
     for i in FRAME_SYNC_1_OFFSET..FRAME_SYNC_1_OFFSET+3 {
-        prot_frame[i as usize] = 0x7f;
+        udp_frame[i as usize] = 0x7f;
     }
     // Encode command and control bytes
     let cc = i_cc.cc_out_next_seq();
     j = 0;
     for i in FRAME_CC_1_OFFSET..FRAME_CC_1_OFFSET + 5 {
-        prot_frame[i as usize] = cc[j];
+        udp_frame[i as usize] = cc[j];
         j = j+1;
     }
     // Frame data
     j = 0;
     for i in START_FRAME_1..END_FRAME_1 {
-        prot_frame[i as usize] = udp_frame[j];
+        udp_frame[i as usize] = prot_frame[j];
         j = j+1;
     }
 
     // Second protocol frame
     // Header
     for i in FRAME_SYNC_2_OFFSET..FRAME_SYNC_2_OFFSET+3 {
-        prot_frame[i as usize] = 0x7f;
+        udp_frame[i as usize] = 0x7f;
     }
     // Encode command and control bytes
     let cc = i_cc.cc_out_next_seq();
     j = 0;
     for i in FRAME_CC_2_OFFSET..FRAME_CC_2_OFFSET + 5 {
-        prot_frame[i as usize] = cc[j];
+        udp_frame[i as usize] = cc[j];
         j = j+1;
     }
     // Frame data
     j = PROT_SZ;
     for i in START_FRAME_2..END_FRAME_2 {
-        prot_frame[i as usize] = udp_frame[j];
+        //println!("{}", i);
+        udp_frame[i as usize] = prot_frame[j];
         j = j+1;
     }
 
