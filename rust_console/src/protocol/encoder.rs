@@ -64,14 +64,44 @@ pub fn encode(  i_seq: &mut protocol::seq_out::SeqData,
         prot_frame[i as usize] = next_seq[j];
         j = j+1;
     }
+
     // First protocol frame
     // Header
     for i in FRAME_SYNC_1_OFFSET..FRAME_SYNC_1_OFFSET+3 {
         prot_frame[i as usize] = 0x7f;
     }
-
     // Encode command and control bytes
-    let next_cc = i_cc.cc_out_next_seq();
-    
+    let cc = i_cc.cc_out_next_seq();
+    j = 0;
+    for i in FRAME_CC_1_OFFSET..FRAME_CC_1_OFFSET + 5 {
+        prot_frame[i as usize] = cc[j];
+        j = j+1;
+    }
+    // Frame data
+    j = 0;
+    for i in START_FRAME_1..END_FRAME_1 {
+        prot_frame[i as usize] = udp_frame[j];
+        j = j+1;
+    }
+
+    // Second protocol frame
+    // Header
+    for i in FRAME_SYNC_2_OFFSET..FRAME_SYNC_2_OFFSET+3 {
+        prot_frame[i as usize] = 0x7f;
+    }
+    // Encode command and control bytes
+    let cc = i_cc.cc_out_next_seq();
+    j = 0;
+    for i in FRAME_CC_2_OFFSET..FRAME_CC_2_OFFSET + 5 {
+        prot_frame[i as usize] = cc[j];
+        j = j+1;
+    }
+    // Frame data
+    j = 0;
+    for i in START_FRAME_2..END_FRAME_2 {
+        prot_frame[i as usize] = udp_frame[j];
+        j = j+1;
+    }
+
 }
 
