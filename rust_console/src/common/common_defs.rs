@@ -35,3 +35,17 @@ pub const EP2 : u8 = 0x02;
 pub const EP4 : u8 = 0x04;
 pub const EP6 : u8 = 0x06;
 pub const DATA_PKT : u8 = 0x01;
+// Sequence number
+pub const FRAME_SEQ_OFFSET : u32 = 4;
+
+// First USB frame
+pub const FRAME_SYNC_1_OFFSET : u32 = FRAME_SEQ_OFFSET + 4;
+pub const FRAME_CC_1_OFFSET : u32 = FRAME_SYNC_1_OFFSET + 3;
+pub const START_FRAME_1 : u32 = FRAME_CC_1_OFFSET + 5;
+pub const END_FRAME_1 : u32 = START_FRAME_1 + 503;
+
+// Second USB frame
+pub const FRAME_SYNC_2_OFFSET : u32 = START_FRAME_1 + 504;
+pub const FRAME_CC_2_OFFSET : u32 = FRAME_SYNC_2_OFFSET + 3;
+pub const START_FRAME_2 : u32 = FRAME_CC_2_OFFSET + 5;
+pub const END_FRAME_2 : u32 = START_FRAME_2 + 503;

@@ -25,7 +25,9 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use crate::common::common_defs;
+use crate::common::common_defs:: {
+    DATA_PKT,EP2,FRAME_SZ,PROT_SZ,FRAME_SEQ_OFFSET,FRAME_SYNC_1_OFFSET,FRAME_CC_1_OFFSET,START_FRAME_1,
+    END_FRAME_1,FRAME_SYNC_2_OFFSET,FRAME_CC_2_OFFSET,START_FRAME_2,END_FRAME_2 };
 use crate::protocol;
 
 /*
@@ -46,17 +48,27 @@ use crate::protocol;
 */
 pub fn encode(  i_seq: &mut protocol::seq_out::SeqData, 
                 i_cc: &mut protocol::cc_out::CCDataMutex, 
-                udp_frame: &mut [u8; common_defs::FRAME_SZ], 
-                prot_frame: &mut [u8; common_defs::PROT_SZ*2]) {
+                udp_frame: &mut [u8; FRAME_SZ], 
+                prot_frame: &mut [u8; PROT_SZ*2]) {
 
     // Encode header
-    prot_frame[0] = 0xef;
-    prot_frame[1] = 0xfe;
-    prot_frame[2] = common_defs::DATA_PKT;
-    prot_frame[3] = common_defs::EP2;
+    udp_frame[0] = 0xef;
+    udp_frame[1] = 0xfe;
+    udp_frame[2] = DATA_PKT;
+    udp_frame[3] = EP2;
 
     // Encode sequence number
     let next_seq = i_seq.next_ep2_seq();
+    let mut j: usize = 0;
+    for i in FRAME_SEQ_OFFSET..FRAME_SEQ_OFFSET + 4 {
+        prot_frame[i as usize] = next_seq[j];
+        j = j+1;
+    }
+    // First protocol frame
+    // Header
+    for i in FRAME_SYNC_1_OFFSET..FRAME_SYNC_1_OFFSET+3 {
+        prot_frame[i as usize] = 0x7f;
+    }
 
     // Encode command and control bytes
     let next_cc = i_cc.cc_out_next_seq();
