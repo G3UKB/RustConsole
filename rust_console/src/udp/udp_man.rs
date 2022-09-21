@@ -48,8 +48,6 @@ pub struct UDPdata{
     pub r_receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
     pub hw_sender : crossbeam_channel::Sender<messages::HWMsg>,
     pub hw_receiver : crossbeam_channel::Receiver<messages::HWMsg>,
-    //pub p_sock : Arc<socket2::Socket>,
-    //pub i_udp_writer : udp_writer::UDPWData,
 }
 
 impl UDPdata {
@@ -68,22 +66,17 @@ impl UDPdata {
             r_receiver : r_r,
             hw_sender : hw_s,
             hw_receiver : hw_r,
-            
-            //i_udp_writer : i_udp_writer,
         }
     }
 
     pub fn udp_init(&mut self) {
         println!("Initialising UDP modules");
-        //let mut i_socket = udp_socket::Sockdata::new();
-        //let p_sock = i_socket.udp_sock_ref();
 
+        // Instantiate the reader thread
         let arc = self.p_sock.clone();
         udp_reader::reader_start(self.r_receiver.clone(), arc);
 
-        //let arc1 = self.p_sock.clone();
-        //let mut i_udp_writer = udp_writer::UDPWData::new(arc1);
-
+        // Instantiate the hardware control thread
         let arc2 = self.p_sock.clone();
         hw_control::hw_control_start(self.hw_receiver.clone(), arc2);
 

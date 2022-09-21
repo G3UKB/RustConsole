@@ -31,7 +31,6 @@ use crate::common::cc_out_defs:: {
 	CCOSpeed,CCO10MhzRef,CCO122MhzRef,CCOBoardConfig,CCOMicSrc,
 	CCOAlexAttn,CCOPreamp,CCORxAnt,CCOAlexRxOut,CCOAlexTxRly,
 	CCODuplex,CCONumRx,CCOAlexAuto,CCOAlexBypass,CCOAlexHpfLpf
-
 };
 
 //========================================================================
@@ -338,8 +337,8 @@ impl CCDataMutex {
 
 	// Set num rx
 	pub fn cc_num_rx(&mut self, num: CCONumRx) {
-		let setting = CCO_DUPLEX_B[num as usize];
-		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC4 as usize, setting, CCO_DUPLEX_M);
+		let setting = CCO_NUM_RX_B[num as usize];
+		self.cc_update(CCOBufferIdx::BGen as usize, CCOByteIdx::CC4 as usize, setting, CCO_NUM_RX_M);
 	}
 
 	//========================================

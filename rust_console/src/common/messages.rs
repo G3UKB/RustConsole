@@ -28,10 +28,6 @@ pub enum ReaderMsg {
     Terminate,
 }
 
-pub enum WriterMsg {
-    Terminate,
-}
-
 pub enum HWMsg {
     Terminate,
     DiscoverHw,

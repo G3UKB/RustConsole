@@ -25,8 +25,13 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
+// UDP frame sz
 pub const FRAME_SZ : usize = 1032;
+// Protocal packet sz (2 per UDP frame)
 pub const PROT_SZ : usize = 504;
 
+// Protocol fields
 pub const EP2 : u8 = 0x02;
+pub const EP4 : u8 = 0x04;
+pub const EP6 : u8 = 0x06;
 pub const DATA_PKT : u8 = 0x01;

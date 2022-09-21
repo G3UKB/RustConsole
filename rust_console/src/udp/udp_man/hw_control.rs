@@ -37,138 +37,162 @@ use socket2;
 use crate::common::messages;
 
 const MAX_MSG:  usize = 63;
-static mut DATA_OUT: [u8; MAX_MSG] = [0; MAX_MSG];
-static mut DATA_IN: [MaybeUninit<u8>; MAX_MSG] = unsafe { MaybeUninit::uninit().assume_init() };
-static mut ADDR: option::Option<socket2::SockAddr> = None;
 
+struct HWData {
+    data_out: [u8; MAX_MSG],
+    data_in: [MaybeUninit<u8>; MAX_MSG],
+    addr: option::Option<socket2::SockAddr>,
+}
+
+impl HWData {
+	// Create a new instance and initialise the default data
+	pub fn new() -> HWData {
+		HWData {
+			data_out: [0; MAX_MSG],
+            data_in: unsafe { MaybeUninit::uninit().assume_init()},
+            addr: None,
+		}
+	}
+
+    pub fn hw_control_run(&mut self, receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : &socket2::Socket) {
+        loop {
+            thread::sleep(Duration::from_millis(100));
+            // Handle messages
+            let r = receiver.try_recv();
+            match r {
+                Ok(file) => {
+                    match file {
+                        messages::HWMsg::Terminate => break,
+                        messages::HWMsg::DiscoverHw => self.do_discover(p_sock),
+                        messages::HWMsg::StartHw =>  self.do_start(p_sock, false),
+                        messages::HWMsg::StopHw=>  self.do_stop(p_sock),
+                    };
+                },
+                Err(_error) => continue,
+            };
+        }
+    }
+
+    fn do_discover(&mut self, p_sock : &socket2::Socket) {
+        let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(255,255,255,255)), 1024);
+        let sock2_addr = socket2::SockAddr::from (addr);
+    
+        unsafe {
+            self.data_out[0] = 0xEF;
+            self.data_out[1] = 0xFE;
+            self.data_out[2] = 0x02;
+            let r1 = p_sock.send_to(&self.data_out, &sock2_addr);
+            match r1 {
+                Ok(res) => println!("Sent discover sz:{}", res),
+                Err(error) => println!("Write error! {}", error),  
+            };
+            
+            let resp = self.read_response(p_sock, "Discover");
+            match resp {
+                None => println!("read_response failed"),
+                Some(addr) => {
+                    println!("Addr: {:#?}", addr);
+                    self.addr =  Some(addr);
+                },
+            }
+        }
+    }
+    
+    fn do_start(&mut self, p_sock : &socket2::Socket, wbs : bool) {
+        
+        unsafe {
+            self.data_out[0] = 0xEF;
+            self.data_out[1] = 0xFE;
+            self.data_out[2] = 0x04;
+            if wbs{
+                self.data_out[3] = 0x03;
+                self.data_out[4] = 0x01;
+            }
+            match &self.addr {
+                None => println!("Can't start hardware as the socket address has not been obtained. Run Discover()"),
+                Some(addr) => {
+                    let r = p_sock.send_to(&self.data_out, &addr);
+                    match r {
+                        Ok(res) => println!("Sent hardware start sz:{}", res),
+                        Err(error) => println!("Start hardware error! {}", error),  
+                    };
+                }
+            }
+        }
+    }
+    
+    fn do_stop(&mut self, p_sock : &socket2::Socket) {
+        
+        unsafe {
+            self.data_out[0] = 0xEF;
+            self.data_out[1] = 0xFE;
+            self.data_out[2] = 0x04;
+            match &self.addr {
+                None => println!("Can't stop hardware as the socket address has not been obtained. Run Discover()"),
+                Some(addr) => {
+                    let r = p_sock.send_to(&self.data_out, &addr);
+                    match r {
+                        Ok(res) => println!("Sent hardware stop sz:{}", res),
+                        Err(error) => println!("Stop hardware error! {}", error),  
+                    };
+                }
+            }
+        }
+    }
+    
+    fn read_response(&mut self, p_sock : &socket2::Socket, ann : &str) -> option::Option<socket2::SockAddr>{
+    
+        let  mut result : option::Option<socket2::SockAddr> = None;
+        unsafe {
+            let mut count = 10;
+            while count > 0 {
+                let r = p_sock.recv_from(&mut self.data_in);
+                match r {
+                    Ok(res) => {
+                        if res.0 > 0 {
+                            println!("{} response sz:{}", ann, res.0);
+                        result = Some(res.1);
+                            break;       
+                        } else {
+                            count = count-1;
+                            if count <= 0 {
+                                println!("Timeout: Failed to read after 10 attempts!");
+                                break;
+                            }
+                            continue;
+                        };
+                    },
+                    Err(error) => {
+                        count = count-1;
+                        if count <= 0 {
+                            println!("Error: Failed to read after 10 attempts! {}", error);
+                            break;
+                        }
+                        continue;  
+                    }
+                };
+                   
+            };
+        };
+        return result;
+    }
+}
+
+//=============================================================================================
+// Entry point to start thread
 pub fn hw_control_start(receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : Arc<socket2::Socket>) {
     thread::spawn(  move || {
-        hw_control_run(receiver, &p_sock);
+        hw_control_init(receiver, &p_sock);
     });
 }
 
-pub fn hw_control_run(receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : &socket2::Socket) {
+// Create and initialise the manager instance.
+// Thread exits when loop in hw_control_run() exits.
+pub fn hw_control_init(receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : &socket2::Socket) {
     println!("Hardware Control running");
-    loop {
-        thread::sleep(Duration::from_millis(100));
-        // Handle messages
-        let r = receiver.try_recv();
-        match r {
-            Ok(file) => {
-                match file {
-                    messages::HWMsg::Terminate => break,
-                    messages::HWMsg::DiscoverHw => do_discover(p_sock),
-                    messages::HWMsg::StartHw =>  do_start(p_sock, false),
-                    messages::HWMsg::StopHw=>  do_stop(p_sock),
-                };
-            },
-            Err(_error) => continue,
-        };
-    }
+    let mut hw_control = HWData::new();
+    hw_control.hw_control_run(receiver, p_sock);
     println!("Hardware Control  exiting");
     thread::sleep(Duration::from_millis(1000));
 }
 
-fn do_discover(p_sock : &socket2::Socket) {
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(255,255,255,255)), 1024);
-    let sock2_addr = socket2::SockAddr::from (addr);
-
-    unsafe {
-        DATA_OUT[0] = 0xEF;
-        DATA_OUT[1] = 0xFE;
-        DATA_OUT[2] = 0x02;
-        let r1 = p_sock.send_to(&DATA_OUT, &sock2_addr);
-        match r1 {
-            Ok(res) => println!("Sent discover sz:{}", res),
-            Err(error) => println!("Write error! {}", error),  
-        };
-        
-        let resp = read_response(p_sock, "Discover");
-        match resp {
-            None => println!("read_response failed"),
-            Some(addr) => {
-                println!("Addr: {:#?}", addr);
-                ADDR =  Some(addr);
-            },
-        }
-    }
-}
-
-fn do_start(p_sock : &socket2::Socket, wbs : bool) {
-    
-    unsafe {
-        DATA_OUT[0] = 0xEF;
-        DATA_OUT[1] = 0xFE;
-        DATA_OUT[2] = 0x04;
-        if wbs{
-            DATA_OUT[3] = 0x03;
-            DATA_OUT[4] = 0x01;
-        }
-        match &ADDR {
-            None => println!("Can't start hardware as the socket address has not been obtained. Run Discover()"),
-            Some(addr) => {
-                let r = p_sock.send_to(&DATA_OUT, &addr);
-                match r {
-                    Ok(res) => println!("Sent hardware start sz:{}", res),
-                    Err(error) => println!("Start hardware error! {}", error),  
-                };
-            }
-        }
-    }
-}
-
-fn do_stop(p_sock : &socket2::Socket) {
-    
-    unsafe {
-        DATA_OUT[0] = 0xEF;
-        DATA_OUT[1] = 0xFE;
-        DATA_OUT[2] = 0x04;
-        match &ADDR {
-            None => println!("Can't stop hardware as the socket address has not been obtained. Run Discover()"),
-            Some(addr) => {
-                let r = p_sock.send_to(&DATA_OUT, &addr);
-                match r {
-                    Ok(res) => println!("Sent hardware stop sz:{}", res),
-                    Err(error) => println!("Stop hardware error! {}", error),  
-                };
-            }
-        }
-    }
-}
-
-fn read_response(p_sock : &socket2::Socket, ann : &str) -> option::Option<socket2::SockAddr>{
-
-    let  mut result : option::Option<socket2::SockAddr> = None;
-    unsafe {
-        let mut count = 10;
-        while count > 0 {
-            let r = p_sock.recv_from(&mut DATA_IN);
-            match r {
-                Ok(res) => {
-                    if res.0 > 0 {
-                        println!("{} response sz:{}", ann, res.0);
-                    result = Some(res.1);
-                        break;       
-                    } else {
-                        count = count-1;
-                        if count <= 0 {
-                            println!("Timeout: Failed to read after 10 attempts!");
-                            break;
-                        }
-                        continue;
-                    };
-                },
-                Err(error) => {
-                    count = count-1;
-                    if count <= 0 {
-                        println!("Error: Failed to read after 10 attempts! {}", error);
-                        break;
-                    }
-                    continue;  
-                }
-            };
-               
-        };
-    };
-    return result;
-}
