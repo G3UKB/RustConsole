@@ -108,8 +108,8 @@ impl UDPdata {
         self.i_hw_control.do_start(false);
         thread::sleep(Duration::from_millis(1000));
         // Call prime to init the hardware
-        match self.opt_udp_writer {
-            Some(mut writer) => writer.prime(),  
+        match &mut self.opt_udp_writer {
+            Some(writer) => writer.prime(),  
             None => println!("Address invalid, hardware will not be primed!"),
         }
         thread::sleep(Duration::from_millis(1000));
