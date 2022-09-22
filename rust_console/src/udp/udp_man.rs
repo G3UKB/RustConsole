@@ -45,7 +45,7 @@ pub struct UDPdata{
     pub i_sock : udp_socket::Sockdata,
     pub p_sock : Arc<socket2::Socket>,
     //pub p_addr: option::Option<Arc<socket2::SockAddr>>,
-    //pub i_udp_writer : udp_writer::UDPWData,
+    pub opt_udp_writer :  option::Option<udp_writer::UDPWData>,
     pub i_hw_control : hw_control::HWData,
     pub r_sender : crossbeam_channel::Sender<messages::ReaderMsg>,
     pub r_receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
@@ -73,25 +73,28 @@ impl UDPdata {
         let p_addr: option::Option<Arc<socket2::SockAddr>> = i_hw_control.udp_addr_ref();
 
         // Create the UDP writer
+        let mut opt_udp_writer: option::Option<udp_writer::UDPWData> = None;
         let arc2 = p_sock.clone();
         match p_addr {
             Some(addr) => {  
                 let arc3 = addr.clone();
-                let mut i_udp_writer = udp_writer::UDPWData::new(arc2, arc3);
+                let i_udp_writer = udp_writer::UDPWData::new(arc2, arc3);
+                opt_udp_writer = Some(i_udp_writer);    
             },
-            None => println!("Address invalid, writer not started"),
+            None => {
+                println!("Address invalid, writer not started");
+            }
         }
 
         // Start the reader thread
         let arc = p_sock.clone();
         udp_reader::reader_start(r_r.clone(), arc);
 
-        
         UDPdata { 
             i_sock : i_sock,
             p_sock : p_sock,
             //p_addr : p_addr,
-            //i_udp_writer : i_udp_writer,
+            opt_udp_writer : opt_udp_writer,
             i_hw_control : i_hw_control,
             r_sender : r_s,
             r_receiver : r_r,
@@ -102,27 +105,18 @@ impl UDPdata {
 
     pub fn udp_init(&mut self) {
         println!("Initialising UDP modules");
-
-        // Instantiate the reader thread
-        //let arc = self.p_sock.clone();
-        //udp_reader::reader_start(self.r_receiver.clone(), arc);
-
-        //************ 
-        // Test
-        //self.i_hw_control.do_discover();
-        //self.hw_sender.send(messages::HWMsg::DiscoverHw).unwrap();
-        //thread::sleep(Duration::from_millis(1000));
-        //self.i_sock.udp_revert_socket();
-        //self.i_hw_control.do_start(false);
-        //thread::sleep(Duration::from_millis(1000));
-        //self.i_hw_control.do_stop();
+        self.i_hw_control.do_start(false);
+        thread::sleep(Duration::from_millis(1000));
         // Call prime to init the hardware
-        //self.i_udp_writer.prime();
-
+        //match self.opt_udp_writer {
+        //    Some(mut writer) => writer.prime(),  
+        //    None => println!("Address invalid, hardware will not be primed!"),
+        //}
+        thread::sleep(Duration::from_millis(1000));
+        self.i_hw_control.do_stop();
     }
 
     pub fn udp_close(&mut self) {
         self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
-        //self.hw_sender.send(messages::HWMsg::Terminate).unwrap();
     }
 }

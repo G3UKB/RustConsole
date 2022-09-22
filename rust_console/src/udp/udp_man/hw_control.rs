@@ -167,22 +167,3 @@ impl HWData {
     }
 }
 
-/*
-//=============================================================================================
-// Entry point to start thread
-pub fn hw_control_start(receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : Arc<socket2::Socket>) {
-    thread::spawn(  move || {
-        hw_control_init(receiver, &p_sock);
-    });
-}
-
-// Create and initialise the manager instance.
-// Thread exits when loop in hw_control_run() exits.
-pub fn hw_control_init(receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : &socket2::Socket) {
-    println!("Hardware Control running");
-    let mut hw_control = HWData::new();
-    hw_control.hw_control_run(receiver, p_sock);
-    println!("Hardware Control  exiting");
-    thread::sleep(Duration::from_millis(1000));
-}
-*/
