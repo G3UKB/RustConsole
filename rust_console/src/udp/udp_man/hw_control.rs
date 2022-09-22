@@ -40,7 +40,7 @@ const MAX_MSG:  usize = 63;
 
 pub struct HWData {
     p_sock: Arc<socket2::Socket>,
-    addr: option::Option<socket2::SockAddr>,
+    addr: option::Option<Arc<socket2::SockAddr>>,
     data_out: [u8; MAX_MSG],
     data_in: [MaybeUninit<u8>; MAX_MSG],
 }
@@ -55,6 +55,10 @@ impl HWData {
             data_in: unsafe { MaybeUninit::uninit().assume_init()},
 		}
 	}
+
+    pub fn udp_addr_ref(&mut self) -> Arc<socket2::SockAddr> {
+        return self.addr.unwrap().clone();
+    }
 /* 
     pub fn hw_control_run(&mut self, receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : &socket2::Socket) {
         loop {
@@ -94,7 +98,7 @@ impl HWData {
                 None => println!("read_response failed"),
                 Some(addr) => {
                     println!("Addr: {:#?}", addr);
-                    self.addr =  Some(addr);
+                    self.addr =  Some(Arc::new(addr));
                 },
             }
         }

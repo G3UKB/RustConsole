@@ -53,16 +53,30 @@ pub struct UDPdata{
 
 impl UDPdata {
     pub fn new() -> UDPdata {
+        // Create the message q's
+        let (r_s, r_r) = unbounded();
+        let (hw_s, hw_r) = unbounded();
+
+        // Create the shared socket
         let mut i_sock = udp_socket::Sockdata::new();
         let p_sock = i_sock.udp_sock_ref();
+
+        // Create hardware control
+        let arc2 = p_sock.clone();
+        let mut i_hw_control = hw_control::HWData::new(arc2);
+        // Do discovery and get address of the hardware unit
+        i_hw_control.do_discover();
+        let p_addr: Arc<socket2::SockAddr> = i_hw_control.udp_addr_ref();
+
+        // Create the UDP writer
         let arc1 = p_sock.clone();
         let mut i_udp_writer = udp_writer::UDPWData::new(arc1);
 
-        let arc2 = p_sock.clone();
-        let mut i_hw_control = hw_control::HWData::new(arc2);
+        // Start the reader thread
+        let arc = p_sock.clone();
+        udp_reader::reader_start(r_r.clone(), arc);
 
-        let (r_s, r_r) = unbounded();
-        let (hw_s, hw_r) = unbounded();
+        
         UDPdata { 
             i_sock : i_sock,
             p_sock : p_sock, 
@@ -79,8 +93,8 @@ impl UDPdata {
         println!("Initialising UDP modules");
 
         // Instantiate the reader thread
-        let arc = self.p_sock.clone();
-        udp_reader::reader_start(self.r_receiver.clone(), arc);
+        //let arc = self.p_sock.clone();
+        //udp_reader::reader_start(self.r_receiver.clone(), arc);
 
         //************ 
         // Test
@@ -98,6 +112,6 @@ impl UDPdata {
 
     pub fn udp_close(&mut self) {
         self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
-        self.hw_sender.send(messages::HWMsg::Terminate).unwrap();
+        //self.hw_sender.send(messages::HWMsg::Terminate).unwrap();
     }
 }
