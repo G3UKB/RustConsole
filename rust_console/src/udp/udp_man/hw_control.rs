@@ -38,22 +38,24 @@ use crate::common::messages;
 
 const MAX_MSG:  usize = 63;
 
-struct HWData {
+pub struct HWData {
+    p_sock: Arc<socket2::Socket>,
+    addr: option::Option<socket2::SockAddr>,
     data_out: [u8; MAX_MSG],
     data_in: [MaybeUninit<u8>; MAX_MSG],
-    addr: option::Option<socket2::SockAddr>,
 }
 
 impl HWData {
 	// Create a new instance and initialise the default data
-	pub fn new() -> HWData {
+	pub fn new(p_sock : Arc<socket2::Socket>) -> HWData {
 		HWData {
+            p_sock: p_sock,
+            addr: None,
 			data_out: [0; MAX_MSG],
             data_in: unsafe { MaybeUninit::uninit().assume_init()},
-            addr: None,
 		}
 	}
-
+/* 
     pub fn hw_control_run(&mut self, receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : &socket2::Socket) {
         loop {
             thread::sleep(Duration::from_millis(100));
@@ -72,8 +74,8 @@ impl HWData {
             };
         }
     }
-
-    fn do_discover(&mut self, p_sock : &socket2::Socket) {
+*/
+    pub fn do_discover(&mut self) {
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(255,255,255,255)), 1024);
         let sock2_addr = socket2::SockAddr::from (addr);
     
@@ -81,13 +83,13 @@ impl HWData {
             self.data_out[0] = 0xEF;
             self.data_out[1] = 0xFE;
             self.data_out[2] = 0x02;
-            let r1 = p_sock.send_to(&self.data_out, &sock2_addr);
+            let r1 = self.p_sock.send_to(&self.data_out, &sock2_addr);
             match r1 {
                 Ok(res) => println!("Sent discover sz:{}", res),
                 Err(error) => println!("Write error! {}", error),  
             };
             
-            let resp = self.read_response(p_sock, "Discover");
+            let resp = self.read_response("Discover");
             match resp {
                 None => println!("read_response failed"),
                 Some(addr) => {
@@ -98,7 +100,7 @@ impl HWData {
         }
     }
     
-    fn do_start(&mut self, p_sock : &socket2::Socket, wbs : bool) {
+    pub fn do_start(&mut self, wbs : bool) {
         
         unsafe {
             self.data_out[0] = 0xEF;
@@ -111,7 +113,7 @@ impl HWData {
             match &self.addr {
                 None => println!("Can't start hardware as the socket address has not been obtained. Run Discover()"),
                 Some(addr) => {
-                    let r = p_sock.send_to(&self.data_out, &addr);
+                    let r = self.p_sock.send_to(&self.data_out, &addr);
                     match r {
                         Ok(res) => println!("Sent hardware start sz:{}", res),
                         Err(error) => println!("Start hardware error! {}", error),  
@@ -121,7 +123,7 @@ impl HWData {
         }
     }
     
-    fn do_stop(&mut self, p_sock : &socket2::Socket) {
+    pub fn do_stop(&mut self) {
         
         unsafe {
             self.data_out[0] = 0xEF;
@@ -130,7 +132,7 @@ impl HWData {
             match &self.addr {
                 None => println!("Can't stop hardware as the socket address has not been obtained. Run Discover()"),
                 Some(addr) => {
-                    let r = p_sock.send_to(&self.data_out, &addr);
+                    let r = self.p_sock.send_to(&self.data_out, &addr);
                     match r {
                         Ok(res) => println!("Sent hardware stop sz:{}", res),
                         Err(error) => println!("Stop hardware error! {}", error),  
@@ -140,13 +142,13 @@ impl HWData {
         }
     }
     
-    fn read_response(&mut self, p_sock : &socket2::Socket, ann : &str) -> option::Option<socket2::SockAddr>{
+    fn read_response(&mut self, ann : &str) -> option::Option<socket2::SockAddr>{
     
         let  mut result : option::Option<socket2::SockAddr> = None;
         unsafe {
             let mut count = 10;
             while count > 0 {
-                let r = p_sock.recv_from(&mut self.data_in);
+                let r = self.p_sock.recv_from(&mut self.data_in);
                 match r {
                     Ok(res) => {
                         if res.0 > 0 {
@@ -178,6 +180,7 @@ impl HWData {
     }
 }
 
+/*
 //=============================================================================================
 // Entry point to start thread
 pub fn hw_control_start(receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : Arc<socket2::Socket>) {
@@ -195,4 +198,4 @@ pub fn hw_control_init(receiver : crossbeam_channel::Receiver<messages::HWMsg>, 
     println!("Hardware Control  exiting");
     thread::sleep(Duration::from_millis(1000));
 }
-
+*/

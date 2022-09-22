@@ -32,7 +32,7 @@ use crate::common::common_defs;
 use crate::protocol;
 
 pub struct UDPWData{
-	sock2 : Arc<socket2::Socket>,
+	p_sock : Arc<socket2::Socket>,
     udp_frame : [u8; common_defs::FRAME_SZ],
     prot_frame : [u8; common_defs::PROT_SZ*2],
     //pub i_cc: Arc<protocol::cc_out::CCDataMutex>,
@@ -51,7 +51,7 @@ impl UDPWData {
         let i_seq = protocol::seq_out::SeqData::new();
 
 		UDPWData {
-			sock2: p_sock,
+			p_sock: p_sock,
             udp_frame: [0; common_defs::FRAME_SZ],
             prot_frame: [0; common_defs::PROT_SZ*2],
             i_cc: i_cc,
@@ -59,8 +59,15 @@ impl UDPWData {
 		}
 	}
 
+    // Send a fully set of cc bytes to prime the radio before starting to listen
     pub fn prime(&mut self) {
-        protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
+        
+        for i in 0..6 {
+            // Encode the next frame
+            protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
+            // Send to hardware
+            self.p_sock.send_to(&self.udp_frame, ("127.0.0.1:80"));
+        }
         println!("{:02x?}", self.udp_frame);
     }
 }
