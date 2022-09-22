@@ -40,7 +40,7 @@ const MAX_MSG:  usize = 63;
 
 pub struct HWData {
     p_sock: Arc<socket2::Socket>,
-    addr: option::Option<socket2::SockAddr>,
+    addr: option::Option<Arc<socket2::SockAddr>>,
     data_out: [u8; MAX_MSG],
     data_in: [MaybeUninit<u8>; MAX_MSG],
 }
@@ -56,30 +56,10 @@ impl HWData {
 		}
 	}
 
-    pub fn udp_addr_ref(&mut self) -> Arc<option::Option<socket2::SockAddr>> {
-        //let v = self.addr.unwrap();
-        return Arc::new(self.addr);
+    pub fn udp_addr_ref(&mut self) -> option::Option<Arc<socket2::SockAddr>> {
+        return self.addr.clone();
     }
-/* 
-    pub fn hw_control_run(&mut self, receiver : crossbeam_channel::Receiver<messages::HWMsg>, p_sock : &socket2::Socket) {
-        loop {
-            thread::sleep(Duration::from_millis(100));
-            // Handle messages
-            let r = receiver.try_recv();
-            match r {
-                Ok(file) => {
-                    match file {
-                        messages::HWMsg::Terminate => break,
-                        messages::HWMsg::DiscoverHw => self.do_discover(p_sock),
-                        messages::HWMsg::StartHw =>  self.do_start(p_sock, false),
-                        messages::HWMsg::StopHw=>  self.do_stop(p_sock),
-                    };
-                },
-                Err(_error) => continue,
-            };
-        }
-    }
-*/
+
     pub fn do_discover(&mut self) -> bool {
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(255,255,255,255)), 1024);
         let sock2_addr = socket2::SockAddr::from (addr);
@@ -99,7 +79,7 @@ impl HWData {
                 None => println!("read_response failed"),
                 Some(addr) => {
                     println!("Addr: {:#?}", addr);
-                    self.addr =  Some(addr);
+                    self.addr =  Some(Arc::new(addr));
                     success = true;
                 },
             }

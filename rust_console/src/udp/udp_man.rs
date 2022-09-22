@@ -44,8 +44,8 @@ use crossbeam_channel::unbounded;
 pub struct UDPdata{
     pub i_sock : udp_socket::Sockdata,
     pub p_sock : Arc<socket2::Socket>,
-    pub p_addr: Arc<option::Option<socket2::SockAddr>>,
-    pub i_udp_writer : udp_writer::UDPWData,
+    //pub p_addr: option::Option<Arc<socket2::SockAddr>>,
+    //pub i_udp_writer : udp_writer::UDPWData,
     pub i_hw_control : hw_control::HWData,
     pub r_sender : crossbeam_channel::Sender<messages::ReaderMsg>,
     pub r_receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
@@ -70,12 +70,17 @@ impl UDPdata {
         if !i_hw_control.do_discover() {
             println!("Discovery failed, reader and writer will not be operational!");
         }
-        let p_addr: Arc<option::Option<socket2::SockAddr>> = i_hw_control.udp_addr_ref();
+        let p_addr: option::Option<Arc<socket2::SockAddr>> = i_hw_control.udp_addr_ref();
 
         // Create the UDP writer
         let arc2 = p_sock.clone();
-        let arc3 = p_addr.clone();
-        let mut i_udp_writer = udp_writer::UDPWData::new(arc2, arc3);
+        match p_addr {
+            Some(addr) => {  
+                let arc3 = addr.clone();
+                let mut i_udp_writer = udp_writer::UDPWData::new(arc2, arc3);
+            },
+            None => println!("Address invalid, writer not started"),
+        }
 
         // Start the reader thread
         let arc = p_sock.clone();
@@ -85,8 +90,8 @@ impl UDPdata {
         UDPdata { 
             i_sock : i_sock,
             p_sock : p_sock,
-            p_addr : p_addr,
-            i_udp_writer : i_udp_writer,
+            //p_addr : p_addr,
+            //i_udp_writer : i_udp_writer,
             i_hw_control : i_hw_control,
             r_sender : r_s,
             r_receiver : r_r,
