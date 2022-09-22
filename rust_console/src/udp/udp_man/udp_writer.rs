@@ -37,8 +37,6 @@ pub struct UDPWData{
     p_addr : Arc<socket2::SockAddr>,
     udp_frame : [u8; common_defs::FRAME_SZ],
     prot_frame : [u8; common_defs::PROT_SZ*2],
-    //pub i_cc: Arc<protocol::cc_out::CCDataMutex>,
-    //pub i_seq: Arc<protocol::seq_man::SeqData>,
     pub i_cc: protocol::cc_out::CCDataMutex,
     pub i_seq: protocol::seq_out::SeqData,
 }
@@ -69,16 +67,11 @@ impl UDPWData {
             // Encode the next frame
             protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
             // Send to hardware
-            //match self.p_addr {
-            //    Some(addr) => {
-                    let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
-                    match r {
-                        sz => println!("OK {:?}", sz),
-                        Error => println!("Err"),
-                    } 
-            //    }
-            //    None => println!("Sorry, cannot send data as the address has not been set up!"),
-            //}
+            let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
+            match r {
+                sz => println!("OK {:?}", sz),
+                Error => println!("Err"),
+            } 
         }
         //println!("{:02x?}", self.udp_frame);
     }
