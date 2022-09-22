@@ -73,7 +73,7 @@ impl UDPWData {
                 Some(addr) => {
                     let r = self.p_sock.send_to(&self.udp_frame, addr);
                     match r {
-                        sz => println!("OK {}", sz),
+                        sz => println!("OK {:?}", sz),
                         Error => println!("Err"),
                     } 
                 }
