@@ -34,6 +34,7 @@ pub mod hw_control;
 use std::thread;
 use std::time::Duration;
 use std::sync::Arc;
+use std::option;
 
 use crate::common::messages;
 
@@ -43,6 +44,7 @@ use crossbeam_channel::unbounded;
 pub struct UDPdata{
     pub i_sock : udp_socket::Sockdata,
     pub p_sock : Arc<socket2::Socket>,
+    pub p_addr: Arc<option::Option<socket2::SockAddr>>,
     pub i_udp_writer : udp_writer::UDPWData,
     pub i_hw_control : hw_control::HWData,
     pub r_sender : crossbeam_channel::Sender<messages::ReaderMsg>,
@@ -62,15 +64,18 @@ impl UDPdata {
         let p_sock = i_sock.udp_sock_ref();
 
         // Create hardware control
-        let arc2 = p_sock.clone();
-        let mut i_hw_control = hw_control::HWData::new(arc2);
+        let arc1 = p_sock.clone();
+        let mut i_hw_control = hw_control::HWData::new(arc1);
         // Do discovery and get address of the hardware unit
-        i_hw_control.do_discover();
-        let p_addr: Arc<socket2::SockAddr> = i_hw_control.udp_addr_ref();
+        if !i_hw_control.do_discover() {
+            println!("Discovery failed, reader and writer will not be operational!");
+        }
+        let p_addr: Arc<option::Option<socket2::SockAddr>> = i_hw_control.udp_addr_ref();
 
         // Create the UDP writer
-        let arc1 = p_sock.clone();
-        let mut i_udp_writer = udp_writer::UDPWData::new(arc1);
+        let arc2 = p_sock.clone();
+        let arc3 = p_addr.clone();
+        let mut i_udp_writer = udp_writer::UDPWData::new(arc2, arc3);
 
         // Start the reader thread
         let arc = p_sock.clone();
@@ -79,7 +84,8 @@ impl UDPdata {
         
         UDPdata { 
             i_sock : i_sock,
-            p_sock : p_sock, 
+            p_sock : p_sock,
+            p_addr : p_addr,
             i_udp_writer : i_udp_writer,
             i_hw_control : i_hw_control,
             r_sender : r_s,
@@ -98,15 +104,15 @@ impl UDPdata {
 
         //************ 
         // Test
-        self.i_hw_control.do_discover();
+        //self.i_hw_control.do_discover();
         //self.hw_sender.send(messages::HWMsg::DiscoverHw).unwrap();
-        thread::sleep(Duration::from_millis(1000));
-        self.i_sock.udp_revert_socket();
-        self.i_hw_control.do_start(false);
-        thread::sleep(Duration::from_millis(1000));
-        self.i_hw_control.do_stop();
+        //thread::sleep(Duration::from_millis(1000));
+        //self.i_sock.udp_revert_socket();
+        //self.i_hw_control.do_start(false);
+        //thread::sleep(Duration::from_millis(1000));
+        //self.i_hw_control.do_stop();
         // Call prime to init the hardware
-        self.i_udp_writer.prime();
+        //self.i_udp_writer.prime();
 
     }
 

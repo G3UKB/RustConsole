@@ -25,14 +25,16 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use socket2;
+use socket2::{self, SockAddr};
 use std::sync::Arc;
+use std::option;
 
 use crate::common::common_defs;
 use crate::protocol;
 
 pub struct UDPWData{
 	p_sock : Arc<socket2::Socket>,
+    p_addr : Arc<option::Option<socket2::SockAddr>>,
     udp_frame : [u8; common_defs::FRAME_SZ],
     prot_frame : [u8; common_defs::PROT_SZ*2],
     //pub i_cc: Arc<protocol::cc_out::CCDataMutex>,
@@ -44,7 +46,7 @@ pub struct UDPWData{
 // Implementation methods on CCData
 impl UDPWData {
 	// Create a new instance and initialise the default arrays
-	pub fn new(p_sock : Arc<socket2::Socket>) -> UDPWData {
+	pub fn new(p_sock : Arc<socket2::Socket>, p_addr : Arc<option::Option<socket2::SockAddr>>) -> UDPWData {
         // Create an instance of the cc_out type
         let i_cc = protocol::cc_out::CCDataMutex::new();
         // Create an instance of the sequence type
@@ -52,6 +54,7 @@ impl UDPWData {
 
 		UDPWData {
 			p_sock: p_sock,
+            p_addr: p_addr,
             udp_frame: [0; common_defs::FRAME_SZ],
             prot_frame: [0; common_defs::PROT_SZ*2],
             i_cc: i_cc,
@@ -66,8 +69,17 @@ impl UDPWData {
             // Encode the next frame
             protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
             // Send to hardware
-            self.p_sock.send_to(&self.udp_frame, ("127.0.0.1:80"));
+            match &*self.p_addr {
+                Some(addr) => {
+                    let r = self.p_sock.send_to(&self.udp_frame, addr);
+                    match r {
+                        sz => println!("OK {}", sz),
+                        Error => println!("Err"),
+                    } 
+                }
+                None => println!("Sorry, cannot send data as the address has not been set up!"),
+            }
         }
-        println!("{:02x?}", self.udp_frame);
+        //println!("{:02x?}", self.udp_frame);
     }
 }
