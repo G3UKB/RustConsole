@@ -72,23 +72,25 @@ impl UDPdata {
         }
         let p_addr: option::Option<Arc<socket2::SockAddr>> = i_hw_control.udp_addr_ref();
 
-        // Create the UDP writer
+        // Create the UDP reader and writer
         let mut opt_udp_writer: option::Option<udp_writer::UDPWData> = None;
         let arc2 = p_sock.clone();
+        let arc3 = p_sock.clone();
         match p_addr {
-            Some(addr) => {  
-                let arc3 = addr.clone();
-                let i_udp_writer = udp_writer::UDPWData::new(arc2, arc3);
-                opt_udp_writer = Some(i_udp_writer);    
+            Some(addr) => { 
+                // Create UDP writer 
+                let arc4 = addr.clone();
+                let i_udp_writer = udp_writer::UDPWData::new(arc2, arc4);
+                opt_udp_writer = Some(i_udp_writer); 
+                
+                // Start the UDP reader thread
+                let arc5 = addr.clone();
+                udp_reader::reader_start(r_r.clone(), arc3, arc5); 
             },
             None => {
-                println!("Address invalid, writer not started");
+                println!("Address invalid, UDP reader and writer will not be started! Is hardware on-line?");
             }
         }
-
-        // Start the reader thread
-        let arc = p_sock.clone();
-        udp_reader::reader_start(r_r.clone(), arc);
 
         UDPdata { 
             i_sock : i_sock,
@@ -104,7 +106,7 @@ impl UDPdata {
     }
 
     pub fn udp_init(&mut self) {
-        println!("Initialising UDP modules");
+        println!("Initialising hardware...");
         self.i_hw_control.do_start(false);
         thread::sleep(Duration::from_millis(1000));
         // Call prime to init the hardware
