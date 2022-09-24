@@ -26,6 +26,7 @@ bob@bobcowdery.plus.com
 
 pub enum ReaderMsg {
     Terminate,
+    StartListening,
 }
 
 pub enum HWMsg {

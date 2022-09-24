@@ -28,8 +28,10 @@ bob@bobcowdery.plus.com
 use std::thread;
 use std::time::Duration;
 use socket2;
+use std::mem::MaybeUninit;
 use std::sync::Arc;
 
+use crate::common::common_defs;
 use crate::common::messages;
 
 pub fn reader_start(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : Arc<socket2::Socket>, p_addr : Arc<socket2::SockAddr>) {
@@ -40,20 +42,36 @@ pub fn reader_start(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
 
 pub fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &socket2::Socket, p_addr : &socket2::SockAddr) {
     println!("UDP Reader running");
+
+    let mut listen: bool = false;
+    let mut udp_frame: [MaybeUninit<u8>; common_defs::FRAME_SZ] = unsafe {MaybeUninit::uninit().assume_init()};
+    let prot_frame : [u8; common_defs::PROT_SZ*2];
+
     loop {
         thread::sleep(Duration::from_millis(100));
-        // Check for termination code
+        // Check for messages
         let r = receiver.try_recv();
         match r {
-            Ok(file) => {
-                match file {
+            Ok(msg) => {
+                match msg {
                     messages::ReaderMsg::Terminate => break,
+                    messages::ReaderMsg::StartListening => {
+                        listen = true;
+                        println!("Listening for data...");
+                    }
                 };
             },
-            Err(_error) => continue,
+            // Do nothing if there are no message matches
+            _ => (),
         };
-
-        // Perform read data
+        // Perform read data?
+        if listen {
+            let r = p_sock.recv_from(&mut udp_frame);
+            match r {
+                Ok((sz,_addr)) => println!("Received {:?} data bytes", sz),
+                Err(e) => println!("Error or timeout on receive data [{}]", e),
+            } 
+        }
     }
     println!("UDP Reader exiting");
     thread::sleep(Duration::from_millis(1000));

@@ -115,9 +115,15 @@ impl UDPdata {
             None => println!("Address invalid, hardware will not be primed!"),
         }
         thread::sleep(Duration::from_millis(1000));
+        // Let the reader start
+        self.r_sender.send(messages::ReaderMsg::StartListening).unwrap();
+        thread::sleep(Duration::from_millis(10000));
+
+        // Stop the hardware
         self.i_hw_control.do_stop();
     }
 
+    // Terminate the reader thread
     pub fn udp_close(&mut self) {
         self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
     }
