@@ -30,6 +30,7 @@ use std::time::Duration;
 use socket2;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
+use crate::protocol;
 
 use crate::common::common_defs;
 use crate::common::messages;
@@ -68,11 +69,18 @@ pub fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p
         if listen {
             let r = p_sock.recv_from(&mut udp_frame);
             match r {
-                Ok((sz,_addr)) => println!("Received {:?} data bytes", sz),
-                Err(e) => println!("Error or timeout on receive data [{}]", e),
+                Ok((sz,_addr)) => {
+                    println!("Received {:?} data bytes", sz);
+                    split_frame(udp_frame);
+                }
+                Err(e) => (), //println!("Error or timeout on receive data [{}]", e),
             } 
         }
     }
     println!("UDP Reader exiting");
     thread::sleep(Duration::from_millis(1000));
+}
+
+fn split_frame(udp_frame: [MaybeUninit<u8>; common_defs::FRAME_SZ]) {
+    protocol::decoder::frame_decode(126, 1, 48000, common_defs::FRAME_SZ*2, udp_frame); 
 }

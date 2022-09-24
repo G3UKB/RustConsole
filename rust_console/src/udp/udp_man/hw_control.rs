@@ -95,7 +95,8 @@ impl HWData {
             self.data_out[2] = 0x04;
             if wbs{
                 self.data_out[3] = 0x03;
-                self.data_out[4] = 0x01;
+            } else {
+                self.data_out[3] = 0x01;
             }
             match &self.addr {
                 None => println!("Can't start hardware as the socket address has not been obtained. Run Discover()"),

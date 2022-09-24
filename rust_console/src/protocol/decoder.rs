@@ -24,3 +24,20 @@ The authors can be reached by email at:
 
 bob@bobcowdery.plus.com
 */
+
+use crate::common::common_defs;
+use std::mem::MaybeUninit;
+
+pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: usize, udp_frame: [MaybeUninit<u8>; common_defs::FRAME_SZ]) {
+
+	/* Decode the incoming data packet
+	*
+	* Arguments:
+	*  n_smpls			--	number of I/Q samples per frame per receiver
+	*  n_rx				--	number of receivers
+	*  rate				-- 	48000/96000/192000/384000
+	* in_sz				--	size of input data buffer
+	*  ptr_in_bytes   	--  ptr to the input data
+	*/
+
+}
