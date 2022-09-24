@@ -41,7 +41,7 @@ pub fn reader_start(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
     });
 }
 
-pub fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &socket2::Socket, p_addr : &socket2::SockAddr) {
+fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &socket2::Socket, p_addr : &socket2::SockAddr) {
     println!("UDP Reader running");
 
     let mut listen: bool = false;
@@ -70,7 +70,7 @@ pub fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p
             let r = p_sock.recv_from(&mut udp_frame);
             match r {
                 Ok((sz,_addr)) => {
-                    println!("Received {:?} data bytes", sz);
+                    //println!("Received {:?} data bytes", sz);
                     split_frame(udp_frame);
                 }
                 Err(e) => (), //println!("Error or timeout on receive data [{}]", e),
