@@ -69,9 +69,10 @@ impl UDPWData {
             // Send to hardware
             let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
             match r {
-                Ok(sz) => println!("Sent prime data sz [{:?}]", sz),
+                Ok(_sz) => (), //println!("Sent prime data sz [{:?}]", sz),
                 Err(e) => println!("Error sending [{}]", e),
             } 
+            println!("Sent prime data for all cc values");
         }
         //println!("{:02x?}", self.udp_frame);
     }
