@@ -109,8 +109,7 @@ impl UDPRData<'_> {
     }
 
     // Split frame into protocol fields and data content and decode
-    fn split_frame(&mut self) {
-        
+    fn split_frame(&mut self) {  
         //let mut frame = self.udp_frame.as_mut_ptr();
         // Check for frame type
         if self.udp_frame[3].as_mut_ptr() == &mut common_defs::EP6 {
