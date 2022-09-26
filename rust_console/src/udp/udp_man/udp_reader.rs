@@ -91,7 +91,6 @@ impl UDPRData<'_> {
             };
             // Check for read data
             if self.listen {
-                //let r = self.p_sock.recv_from(&mut self.udp_frame);
                 let r = self.p_sock.recv_from(self.udp_frame.as_mut());
                 match r {
                     Ok((sz,_addr)) => {
@@ -125,11 +124,12 @@ impl UDPRData<'_> {
             // if the sequence number check fails it means we have missed some frames
             // Nothing we can do so it just gets reported.
             let mut j: usize = 0;
-            let mut ep6_seq : [u8; 4];
-            for b in self.udp_frame[4..8] {
-                ep6_seq[j] = b;
+            let mut ep6_seq : [u8; 4] = [0,0,0,0];
+
+            for b in 4..8 {
+                ep6_seq[j] = (self.prot_frame[b as usize]);
             }
-            self.i_seq.check_ep6_seq(self.udp_frame[4..8] as [u8; 4]);
+            self.i_seq.check_ep6_seq(ep6_seq);
 
 			// For 1,2 radios the entire dataframe is used
 			// For 3 radios there are 4 padding bytes in each frame
@@ -150,17 +150,17 @@ impl UDPRData<'_> {
 
             // Extract the data from the UDP frame into the protocol frame
             j = 0;
-            unsafe {
+            //unsafe {
                 for b in common_defs::START_FRAME_1..end_frame_1 {
-                    self.udp_frame[j].as_mut_ptr().write(b as u8);
+                    self.prot_frame[j] = (b as u8);
                     j += 1;
                 }
                 j = 0;
                 for b in common_defs::START_FRAME_2..end_frame_2 {
-                    self.udp_frame[j].as_mut_ptr().write(b as u8);
+                    self.prot_frame[j] = (b as u8);
                     j += 1;
                 }
-            }
+            //}
 
         } else if self.udp_frame[3].as_mut_ptr() == &mut common_defs::EP4 {
             // We have wideband data
