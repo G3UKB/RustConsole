@@ -28,7 +28,7 @@ bob@bobcowdery.plus.com
 use crate::common::common_defs;
 use std::mem::MaybeUninit;
 
-pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: usize, udp_frame: [MaybeUninit<u8>; common_defs::FRAME_SZ]) {
+pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: usize, udp_frame: [u8; common_defs::PROT_SZ * 2]) {
 
 	/* Decode the incoming data packet
 	*

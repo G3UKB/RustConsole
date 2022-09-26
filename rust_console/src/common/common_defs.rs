@@ -49,3 +49,8 @@ pub const FRAME_SYNC_2_OFFSET : u32 = START_FRAME_1 + 504;
 pub const FRAME_CC_2_OFFSET : u32 = FRAME_SYNC_2_OFFSET + 3;
 pub const START_FRAME_2 : u32 = FRAME_CC_2_OFFSET + 5;
 pub const END_FRAME_2 : u32 = START_FRAME_2 + 503;
+
+// Samples per packet
+pub const NUM_SMPLS_1_RADIO : u32 = 126;
+pub const NUM_SMPLS_2_RADIO : u32 = 72;
+pub const NUM_SMPLS_3_RADIO : u32 = 50;
