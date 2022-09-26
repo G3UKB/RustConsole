@@ -110,9 +110,8 @@ impl UDPRData<'_> {
 
     // Split frame into protocol fields and data content and decode
     fn split_frame(&mut self) {  
-        //let mut frame = self.udp_frame.as_mut_ptr();
         // Check for frame type
-        if self.udp_frame[3].as_mut_ptr() == &mut common_defs::EP6 {
+        if self.udp_frame[3] == common_defs::EP6 {
             // We have a frame of IQ data
             // First 8 bytes are the header, then 2x512 bytes of data
             // The sync and cc bytes are the start of each data frame
@@ -125,8 +124,8 @@ impl UDPRData<'_> {
             let mut j: usize = 0;
             let mut ep6_seq : [u8; 4] = [0,0,0,0];
 
-            for b in 4..8 {
-                ep6_seq[j] = (self.prot_frame[b as usize]);
+            for i in 4..8 {
+                ep6_seq[j] = (self.udp_frame[i as usize]);
             }
             self.i_seq.check_ep6_seq(ep6_seq);
 
@@ -151,17 +150,17 @@ impl UDPRData<'_> {
             j = 0;
             //unsafe {
                 for b in common_defs::START_FRAME_1..end_frame_1 {
-                    self.prot_frame[j] = (b as u8);
+                    self.prot_frame[j] = self.udp_frame[b as usize];
                     j += 1;
                 }
                 j = 0;
                 for b in common_defs::START_FRAME_2..end_frame_2 {
-                    self.prot_frame[j] = (b as u8);
+                    self.prot_frame[j] = self.udp_frame[b as usize];
                     j += 1;
                 }
             //}
 
-        } else if self.udp_frame[3].as_mut_ptr() == &mut common_defs::EP4 {
+        } else if self.udp_frame[3] == common_defs::EP4 {
             // We have wideband data
             // TBD
         }
