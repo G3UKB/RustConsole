@@ -109,60 +109,63 @@ impl UDPRData<'_> {
     }
 
     // Split frame into protocol fields and data content and decode
-    fn split_frame(&mut self) {  
-        // Check for frame type
-        if self.udp_frame[3] == common_defs::EP6 {
-            // We have a frame of IQ data
-            // First 8 bytes are the header, then 2x512 bytes of data
-            // The sync and cc bytes are the start of each data frame
-            //
-            // Extract and check the sequence number
-            //  2    1   1   4
-            // Sync Cmd End Seq
-            // if the sequence number check fails it means we have missed some frames
-            // Nothing we can do so it just gets reported.
-            let mut j: usize = 0;
-            let mut ep6_seq : [u8; 4] = [0,0,0,0];
+    fn split_frame(&mut self) { 
+        unsafe { 
+            // Check for frame type
+            if self.udp_frame[3].assume_init() == common_defs::EP6 {
+                // We have a frame of IQ data
+                // First 8 bytes are the header, then 2x512 bytes of data
+                // The sync and cc bytes are the start of each data frame
+                //
+                // Extract and check the sequence number
+                //  2    1   1   4
+                // Sync Cmd End Seq
+                // if the sequence number check fails it means we have missed some frames
+                // Nothing we can do so it just gets reported.
+                let mut j: usize = 0;
+                let mut ep6_seq : [u8; 4] = [0,0,0,0];
 
-            for i in 4..8 {
-                ep6_seq[j] = (self.udp_frame[i as usize]);
-            }
-            self.i_seq.check_ep6_seq(ep6_seq);
-
-			// For 1,2 radios the entire dataframe is used
-			// For 3 radios there are 4 padding bytes in each frame
-            // TBD: For now fix num_rx at one as we don't have the data yet
-            let num_rx = 1; 
-            let mut end_frame_1 = common_defs::END_FRAME_1;
-            let mut end_frame_2 = common_defs::END_FRAME_2;
-            let mut data_sz = common_defs::PROT_SZ * 2;
-            let mut num_smpls = common_defs::NUM_SMPLS_1_RADIO;
-            if num_rx == 2 {
-                num_smpls = common_defs::NUM_SMPLS_2_RADIO;
-            } else if num_rx == 3 {
-                num_smpls = common_defs::NUM_SMPLS_3_RADIO;
-                end_frame_1 -= 4;
-                end_frame_2 -= 4;
-                data_sz -= 8;
-            }
-
-            // Extract the data from the UDP frame into the protocol frame
-            j = 0;
-            //unsafe {
-                for b in common_defs::START_FRAME_1..end_frame_1 {
-                    self.prot_frame[j] = self.udp_frame[b as usize];
+                for i in 4..8 {
+                    ep6_seq[j] = (self.udp_frame[i as usize]).assume_init();
                     j += 1;
                 }
+                self.i_seq.check_ep6_seq(ep6_seq);
+
+                // For 1,2 radios the entire dataframe is used
+                // For 3 radios there are 4 padding bytes in each frame
+                // TBD: For now fix num_rx at one as we don't have the data yet
+                let num_rx = 1; 
+                let mut end_frame_1 = common_defs::END_FRAME_1;
+                let mut end_frame_2 = common_defs::END_FRAME_2;
+                let mut data_sz = common_defs::PROT_SZ * 2;
+                let mut num_smpls = common_defs::NUM_SMPLS_1_RADIO;
+                if num_rx == 2 {
+                    num_smpls = common_defs::NUM_SMPLS_2_RADIO;
+                } else if num_rx == 3 {
+                    num_smpls = common_defs::NUM_SMPLS_3_RADIO;
+                    end_frame_1 -= 4;
+                    end_frame_2 -= 4;
+                    data_sz -= 8;
+                }
+
+                // Extract the data from the UDP frame into the protocol frame
                 j = 0;
-                for b in common_defs::START_FRAME_2..end_frame_2 {
-                    self.prot_frame[j] = self.udp_frame[b as usize];
-                    j += 1;
-                }
-            //}
+                //unsafe {
+                    for b in common_defs::START_FRAME_1..end_frame_1 {
+                        self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
+                        j += 1;
+                    }
+                    j = 0;
+                    for b in common_defs::START_FRAME_2..end_frame_2 {
+                        self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
+                        j += 1;
+                    }
+                //}
 
-        } else if self.udp_frame[3] == common_defs::EP4 {
-            // We have wideband data
-            // TBD
+            } else if self.udp_frame[3].assume_init() == common_defs::EP4 {
+                // We have wideband data
+                // TBD
+            }
         }
         protocol::decoder::frame_decode(126, 1, 48000, common_defs::FRAME_SZ*2, self.prot_frame);
     }
