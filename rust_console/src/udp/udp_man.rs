@@ -46,7 +46,7 @@ pub struct UDPdata{
     pub p_sock : Arc<socket2::Socket>,
     //pub p_addr: option::Option<Arc<socket2::SockAddr>>,
     pub opt_udp_writer :  option::Option<udp_writer::UDPWData>,
-    pub opt_reader_join_handle: &option::Option<thread::JoinHandle<()>>,
+    pub opt_reader_join_handle: option::Option<thread::JoinHandle<()>>,
     pub i_hw_control : hw_control::HWData,
     pub r_sender : crossbeam_channel::Sender<messages::ReaderMsg>,
     pub r_receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
@@ -75,9 +75,9 @@ impl UDPdata {
 
         // Create the UDP reader and writer
         let mut opt_udp_writer: option::Option<udp_writer::UDPWData> = None;
+        let mut opt_reader_join_handle: option::Option<thread::JoinHandle<()>> = None;
         let arc2 = p_sock.clone();
         let arc3 = p_sock.clone();
-        let mut join_handle: option::Option<thread::JoinHandle<()>> = None;
         match p_addr {
             Some(addr) => { 
                 // Create UDP writer 
@@ -86,8 +86,7 @@ impl UDPdata {
                 opt_udp_writer = Some(i_udp_writer); 
                 
                 // Start the UDP reader thread
-                let arc5 = addr.clone();
-                join_handle = Some(udp_reader::reader_start(r_r.clone(), arc3, arc5));
+                opt_reader_join_handle = Some(udp_reader::reader_start(r_r.clone(), arc3));
             },
             None => {
                 println!("Address invalid, UDP reader and writer will not be started! Is hardware on-line?");
@@ -99,7 +98,7 @@ impl UDPdata {
             p_sock : p_sock,
             //p_addr : p_addr,
             opt_udp_writer : opt_udp_writer,
-            opt_reader_join_handle: &join_handle,
+            opt_reader_join_handle : opt_reader_join_handle,
             i_hw_control : i_hw_control,
             r_sender : r_s,
             r_receiver : r_r,
@@ -124,21 +123,23 @@ impl UDPdata {
     }
 
     // Terminate the reader thread
-    pub fn udp_close(&mut self) {
-        self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
+    pub fn udp_close(&mut self) { 
         
+        // Stop the hardware
+        self.i_hw_control.do_stop();
+        thread::sleep(Duration::from_millis(10000));
+        println!("Hardware stopped");
         match &mut self.opt_reader_join_handle {
-            
-            Some(join) => {
+            Some(join_thrd) => {
+                self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
                 println!("Waiting for reader to terminate...");
-                &join.join();  
+                while join_thrd.is_finished() == false {
+                    thread::sleep(Duration::from_millis(1000));
+                } 
                 println!("Reader terminated");
             },
             None => (),
         }
-
         thread::sleep(Duration::from_millis(10000));
-        // Stop the hardware
-        self.i_hw_control.do_stop();
     }
 }

@@ -27,11 +27,13 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
-use socket2;
+use std::option;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
-use crate::protocol;
 
+use socket2;
+
+use crate::protocol;
 use crate::common::common_defs;
 use crate::common::messages;
 
@@ -40,7 +42,6 @@ use crate::common::messages;
 pub struct UDPRData<'a>{
     receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
 	p_sock :  &'a socket2::Socket,
-    p_addr :  &'a socket2::SockAddr,
     udp_frame : [MaybeUninit<u8>; common_defs::FRAME_SZ],
     prot_frame : [u8; common_defs::PROT_SZ*2],
     //pub i_cc: protocol::cc_in::CCDataMutex,
@@ -51,7 +52,7 @@ pub struct UDPRData<'a>{
 // Implementation methods on UDPRData
 impl UDPRData<'_> {
 	// Create a new instance and initialise the default arrays
-	pub fn new<'a>(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &'a socket2::Socket, p_addr : &'a socket2::SockAddr) -> UDPRData<'a> {
+    pub fn new<'a>(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &'a socket2::Socket) -> UDPRData<'a> {
         // Create an instance of the cc_in type
         //let i_cc = protocol::cc_in::CCDataMutex::new();
         // Create an instance of the sequence type
@@ -60,8 +61,6 @@ impl UDPRData<'_> {
 		UDPRData {
             receiver: receiver,
 			p_sock: p_sock,
-            p_addr: p_addr,
-            //udp_frame: unsafe {MaybeUninit::uninit().assume_init()},
             udp_frame: [MaybeUninit::uninit(); common_defs::FRAME_SZ],
             prot_frame: [0; common_defs::PROT_SZ*2],
             //i_cc: i_cc,
@@ -150,18 +149,15 @@ impl UDPRData<'_> {
 
                 // Extract the data from the UDP frame into the protocol frame
                 j = 0;
-                //unsafe {
-                    for b in common_defs::START_FRAME_1..end_frame_1 {
-                        self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
-                        j += 1;
-                    }
-                    j = 0;
-                    for b in common_defs::START_FRAME_2..end_frame_2 {
-                        self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
-                        j += 1;
-                    }
-                //}
-
+                for b in common_defs::START_FRAME_1..end_frame_1 {
+                    self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
+                    j += 1;
+                }
+                j = 0;
+                for b in common_defs::START_FRAME_2..end_frame_2 {
+                    self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
+                    j += 1;
+                }
             } else if self.udp_frame[3].assume_init() == common_defs::EP4 {
                 // We have wideband data
                 // TBD
@@ -174,19 +170,18 @@ impl UDPRData<'_> {
 
 //==================================================================================
 // Thread startup
-
-pub fn reader_start(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : Arc<socket2::Socket>, p_addr : Arc<socket2::SockAddr>) -> thread::JoinHandle<()>{
+pub fn reader_start(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : Arc<socket2::Socket>) -> thread::JoinHandle<()>{
     let join_handle = thread::spawn(  move || {
-        reader_run(receiver, &p_sock, &p_addr);
+        reader_run(receiver, &p_sock);
     });
     return join_handle;
 }
 
-fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &socket2::Socket, p_addr : &socket2::SockAddr) {
+fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &socket2::Socket) {
     println!("UDP Reader running");
 
     // Instantiate the runtime object
-    let mut i_reader = UDPRData::new(receiver,  p_sock,  p_addr);
+    let mut i_reader = UDPRData::new(receiver,  p_sock);
 
     // Exits when the reader loop exits
     i_reader.reader_run();
@@ -194,3 +189,4 @@ fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_soc
     println!("UDP Reader exiting");
     thread::sleep(Duration::from_millis(1000));
 }
+

@@ -58,11 +58,9 @@ impl SeqData {
         } else if new_seq == 0 { 
             self.ep6_seq_check = 0;
         } else if self.ep6_seq_check + 1 != new_seq {
-            //println!("EP6 sequence error - Ex:{}, Got:{}", self.ep6_seq_check, new_seq);
-            println!(".");
+            println!("EP6 sequence error - Ex:{}, Got:{}", self.ep6_seq_check, new_seq);
             self.ep6_seq_check = new_seq;
         } else {
-            println!("#");
             self.ep6_seq_check = self.next_seq(self.ep6_seq_check);
         }
     }
