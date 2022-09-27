@@ -54,3 +54,8 @@ pub const END_FRAME_2 : u32 = START_FRAME_2 + 503;
 pub const NUM_SMPLS_1_RADIO : u32 = 126;
 pub const NUM_SMPLS_2_RADIO : u32 = 72;
 pub const NUM_SMPLS_3_RADIO : u32 = 50;
+
+// Sample rates
+pub const SMPLS_48K : u32 = 48000;
+pub const SMPLS_96K : u32 = 96000;
+pub const SMPLS_192K : u32 = 192000;

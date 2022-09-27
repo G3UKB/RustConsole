@@ -114,6 +114,7 @@ impl UDPRData<'_> {
     fn split_frame(&mut self) { 
         //static mut count: u32 = 0;
         //static mut done: bool = false;
+        let num_rx = 1;
         unsafe { 
             // Check for frame type
             if self.udp_frame[3].assume_init() == common_defs::EP6 {
@@ -148,8 +149,7 @@ impl UDPRData<'_> {
 
                 // For 1,2 radios the entire dataframe is used
                 // For 3 radios there are 4 padding bytes in each frame
-                // TBD: For now fix num_rx at one as we don't have the data yet
-                let num_rx = 1; 
+                // TBD: For now fix num_rx at one as we don't have the data yet 
                 let mut end_frame_1 = common_defs::END_FRAME_1;
                 let mut end_frame_2 = common_defs::END_FRAME_2;
                 let mut data_sz = common_defs::PROT_SZ * 2;
@@ -179,7 +179,7 @@ impl UDPRData<'_> {
                 // TBD
             }
         }
-        protocol::decoder::frame_decode(126, 1, 48000, common_defs::FRAME_SZ*2, self.prot_frame);
+        protocol::decoder::frame_decode(common_defs::NUM_SMPLS_1_RADIO, num_rx, common_defs::SMPLS_48K, common_defs::FRAME_SZ*2, self.prot_frame);
     }
 
 }
