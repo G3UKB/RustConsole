@@ -107,14 +107,13 @@ impl UDPRData<'_> {
                     Err(_e) => (), //println!("Error or timeout on receive data [{}]", e),
                 } 
             }
-            thread::sleep(Duration::from_millis(10));
         }
     }
 
     // Split frame into protocol fields and data content and decode
     fn split_frame(&mut self) { 
-        static mut count: u32 = 0;
-        static mut done: bool = false;
+        //static mut count: u32 = 0;
+        //static mut done: bool = false;
         unsafe { 
             // Check for frame type
             if self.udp_frame[3].assume_init() == common_defs::EP6 {
@@ -135,16 +134,16 @@ impl UDPRData<'_> {
                     j += 1;
                 }
                 if self.i_seq.check_ep6_seq(ep6_seq) {
-                    print!("*");
-                    io::stdout().flush().unwrap();
-                    count += 1;
+                    //print!("*");
+                    //io::stdout().flush().unwrap();
+                    //count += 1;
                 } else {
-                    print!("x");
-                    io::stdout().flush().unwrap();
-                    if !done {
-                        println!("\nCount on seq error {}", count);
-                        if count != 0 {done = true};
-                    }
+                    //print!("x");
+                    //io::stdout().flush().unwrap();
+                    //if !done {
+                    //    println!("\nCount on seq error {}", count);
+                    //    if count != 0 {done = true};
+                    //}
                 }
 
                 // For 1,2 radios the entire dataframe is used

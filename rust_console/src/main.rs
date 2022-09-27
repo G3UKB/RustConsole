@@ -47,9 +47,9 @@ fn main() {
 
     // Temporary code to wait a while then close everything and exit
     thread::sleep(Duration::from_millis(10000));
-    println!("\nStarting shutdown...");
+    println!("Starting shutdown...");
     i_udp.udp_close();
 
-    println!("\nRust console closing...");
+    println!("Rust console closing...");
     thread::sleep(Duration::from_millis(1000));
 }

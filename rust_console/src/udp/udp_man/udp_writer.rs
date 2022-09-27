@@ -72,8 +72,8 @@ impl UDPWData {
                 Ok(_sz) => (), //println!("Sent prime data sz [{:?}]", sz),
                 Err(e) => println!("Error sending [{}]", e),
             } 
-            println!("Sent prime data for all cc values");
         }
+        println!("Sent prime data for all cc values");
         //println!("{:02x?}", self.udp_frame);
     }
 }

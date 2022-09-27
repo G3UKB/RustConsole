@@ -62,7 +62,7 @@ impl SeqData {
             self.ep6_seq_check = 0;
         } else if self.ep6_seq_check + 1 != new_seq {
             io::stdout().flush().unwrap();
-            //println!("EP6 sequence error - Ex:{}, Got:{}", self.ep6_seq_check, new_seq);
+            println!("EP6 sequence error - Ex:{}, Got:{}", self.ep6_seq_check, new_seq);
             self.ep6_seq_check = new_seq;
         } else {
             r = true;

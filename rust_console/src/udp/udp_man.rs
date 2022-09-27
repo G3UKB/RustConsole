@@ -147,7 +147,7 @@ impl UDPdata {
         // Stop the hardware
         self.i_hw_control.do_stop();
         thread::sleep(Duration::from_millis(10000));
-        println!("\nHardware stopped");
+        println!("Hardware stopped");
        
         thread::sleep(Duration::from_millis(10000));
     }
