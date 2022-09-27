@@ -46,6 +46,7 @@ pub struct UDPdata{
     pub p_sock : Arc<socket2::Socket>,
     //pub p_addr: option::Option<Arc<socket2::SockAddr>>,
     pub opt_udp_writer :  option::Option<udp_writer::UDPWData>,
+    pub opt_reader_join_handle: &option::Option<thread::JoinHandle<()>>,
     pub i_hw_control : hw_control::HWData,
     pub r_sender : crossbeam_channel::Sender<messages::ReaderMsg>,
     pub r_receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
@@ -76,6 +77,7 @@ impl UDPdata {
         let mut opt_udp_writer: option::Option<udp_writer::UDPWData> = None;
         let arc2 = p_sock.clone();
         let arc3 = p_sock.clone();
+        let mut join_handle: option::Option<thread::JoinHandle<()>> = None;
         match p_addr {
             Some(addr) => { 
                 // Create UDP writer 
@@ -85,7 +87,7 @@ impl UDPdata {
                 
                 // Start the UDP reader thread
                 let arc5 = addr.clone();
-                udp_reader::reader_start(r_r.clone(), arc3, arc5); 
+                join_handle = Some(udp_reader::reader_start(r_r.clone(), arc3, arc5));
             },
             None => {
                 println!("Address invalid, UDP reader and writer will not be started! Is hardware on-line?");
@@ -97,6 +99,7 @@ impl UDPdata {
             p_sock : p_sock,
             //p_addr : p_addr,
             opt_udp_writer : opt_udp_writer,
+            opt_reader_join_handle: &join_handle,
             i_hw_control : i_hw_control,
             r_sender : r_s,
             r_receiver : r_r,
@@ -118,13 +121,24 @@ impl UDPdata {
         // Let the reader start
         self.r_sender.send(messages::ReaderMsg::StartListening).unwrap();
         thread::sleep(Duration::from_millis(10000));
-
-        // Stop the hardware
-        self.i_hw_control.do_stop();
     }
 
     // Terminate the reader thread
     pub fn udp_close(&mut self) {
         self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
+        
+        match &mut self.opt_reader_join_handle {
+            
+            Some(join) => {
+                println!("Waiting for reader to terminate...");
+                &join.join();  
+                println!("Reader terminated");
+            },
+            None => (),
+        }
+
+        thread::sleep(Duration::from_millis(10000));
+        // Stop the hardware
+        self.i_hw_control.do_stop();
     }
 }

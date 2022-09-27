@@ -175,10 +175,11 @@ impl UDPRData<'_> {
 //==================================================================================
 // Thread startup
 
-pub fn reader_start(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : Arc<socket2::Socket>, p_addr : Arc<socket2::SockAddr>) {
-    thread::spawn(  move || {
+pub fn reader_start(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : Arc<socket2::Socket>, p_addr : Arc<socket2::SockAddr>) -> thread::JoinHandle<()>{
+    let join_handle = thread::spawn(  move || {
         reader_run(receiver, &p_sock, &p_addr);
     });
+    return join_handle;
 }
 
 fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &socket2::Socket, p_addr : &socket2::SockAddr) {
