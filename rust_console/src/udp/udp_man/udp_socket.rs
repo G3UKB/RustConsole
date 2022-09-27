@@ -46,10 +46,12 @@ bob@bobcowdery.plus.com
 
         pub fn udp_revert_socket(&mut self) {
             self.sock2.set_broadcast(false).expect("set_broadcast call failed");
-            self.sock2.set_read_timeout(Some(Duration::from_millis(10))).expect("set_read_timeout call failed");
+            self.sock2.set_read_timeout(Some(Duration::from_millis(100))).expect("set_read_timeout call failed");
             // Set buffer sizes?
             self.sock2.set_recv_buffer_size(192000).expect("set_recv_buffer_size call failed");
+            println!("Receiver buffer sz {:?}", self.sock2.recv_buffer_size());
             self.sock2.set_send_buffer_size(192000).expect("set_send_buffer_size call failed");
+            println!("Send buffer sz {:?}", self.sock2.send_buffer_size());
         }
 
         pub fn udp_sock_ref(&mut self) -> Arc<socket2::Socket> {

@@ -25,6 +25,8 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
+use std::io::{self, Write};
+
 //========================================================================
 // Implementations
 
@@ -50,7 +52,8 @@ impl SeqData {
 		}
 	}
 
-    pub fn check_ep6_seq(&mut self, seq: [u8; 4]) {
+    pub fn check_ep6_seq(&mut self, seq: [u8; 4]) -> bool {
+        let mut r: bool = false;
         let new_seq = self.big_to_little_endian(seq);
         if !self.ep6_init {
             self.ep6_seq_check = new_seq;
@@ -58,11 +61,15 @@ impl SeqData {
         } else if new_seq == 0 { 
             self.ep6_seq_check = 0;
         } else if self.ep6_seq_check + 1 != new_seq {
-            println!("EP6 sequence error - Ex:{}, Got:{}", self.ep6_seq_check, new_seq);
+            io::stdout().flush().unwrap();
+            //println!("EP6 sequence error - Ex:{}, Got:{}", self.ep6_seq_check, new_seq);
             self.ep6_seq_check = new_seq;
         } else {
+            r = true;
+            io::stdout().flush().unwrap();
             self.ep6_seq_check = self.next_seq(self.ep6_seq_check);
         }
+        return r;
     }
 
     fn next_seq(&self, seq: u32) -> u32 {

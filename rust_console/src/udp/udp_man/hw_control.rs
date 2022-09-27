@@ -122,8 +122,8 @@ impl HWData {
                 Some(addr) => {
                     let r = self.p_sock.send_to(&self.data_out, &addr);
                     match r {
-                        Ok(res) => println!("Sent hardware stop sz:{}", res),
-                        Err(error) => println!("Stop hardware error! {}", error),  
+                        Ok(res) => println!("\nSent hardware stop sz:{}", res),
+                        Err(error) => println!("\nStop hardware error! {}", error),  
                     };
                 }
             }

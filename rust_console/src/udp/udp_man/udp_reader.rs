@@ -30,6 +30,7 @@ use std::time::Duration;
 use std::option;
 use std::mem::MaybeUninit;
 use std::sync::Arc;
+use std::io::{self, Write};
 
 use socket2;
 
@@ -72,7 +73,6 @@ impl UDPRData<'_> {
     // Run loop for reader
     pub fn reader_run(&mut self) {
         loop {
-            thread::sleep(Duration::from_millis(100));
             // Check for messages
             let r = self.receiver.try_recv();
             match r {
@@ -82,6 +82,10 @@ impl UDPRData<'_> {
                         messages::ReaderMsg::StartListening => {
                             self.listen = true;
                             println!("Listening for data...");
+                        }
+                        messages::ReaderMsg::StopListening => {
+                            self.listen = false;
+                            println!("Stopped listening for data");
                         }
                     };
                 },
@@ -94,7 +98,6 @@ impl UDPRData<'_> {
                 match r {
                     Ok((sz,_addr)) => {
                         //println!("Received {:?} data bytes", sz);
-                        
                         if sz == common_defs::FRAME_SZ {
                             self.split_frame();
                         } else {
@@ -104,11 +107,14 @@ impl UDPRData<'_> {
                     Err(_e) => (), //println!("Error or timeout on receive data [{}]", e),
                 } 
             }
+            thread::sleep(Duration::from_millis(10));
         }
     }
 
     // Split frame into protocol fields and data content and decode
     fn split_frame(&mut self) { 
+        static mut count: u32 = 0;
+        static mut done: bool = false;
         unsafe { 
             // Check for frame type
             if self.udp_frame[3].assume_init() == common_defs::EP6 {
@@ -128,7 +134,18 @@ impl UDPRData<'_> {
                     ep6_seq[j] = (self.udp_frame[i as usize]).assume_init();
                     j += 1;
                 }
-                self.i_seq.check_ep6_seq(ep6_seq);
+                if self.i_seq.check_ep6_seq(ep6_seq) {
+                    print!("*");
+                    io::stdout().flush().unwrap();
+                    count += 1;
+                } else {
+                    print!("x");
+                    io::stdout().flush().unwrap();
+                    if !done {
+                        println!("\nCount on seq error {}", count);
+                        if count != 0 {done = true};
+                    }
+                }
 
                 // For 1,2 radios the entire dataframe is used
                 // For 3 radios there are 4 padding bytes in each frame

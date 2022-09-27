@@ -72,6 +72,8 @@ impl UDPdata {
             println!("Discovery failed, reader and writer will not be operational!");
         }
         let p_addr: option::Option<Arc<socket2::SockAddr>> = i_hw_control.udp_addr_ref();
+        // Revert the socket to non-broadcast and set buffer size
+        i_sock.udp_revert_socket();
 
         // Create the UDP reader and writer
         let mut opt_udp_writer: option::Option<udp_writer::UDPWData> = None;
@@ -109,8 +111,8 @@ impl UDPdata {
 
     pub fn udp_init(&mut self) {
         println!("Initialising hardware...");
-        self.i_hw_control.do_start(false);
-        thread::sleep(Duration::from_millis(1000));
+        //self.i_hw_control.do_start(false);
+        //thread::sleep(Duration::from_millis(1000));
         // Call prime to init the hardware
         match &mut self.opt_udp_writer {
             Some(writer) => writer.prime(),  
@@ -119,27 +121,34 @@ impl UDPdata {
         thread::sleep(Duration::from_millis(1000));
         // Let the reader start
         self.r_sender.send(messages::ReaderMsg::StartListening).unwrap();
-        thread::sleep(Duration::from_millis(10000));
+        //thread::sleep(Duration::from_millis(1000));
+
+        self.i_hw_control.do_start(false);
+        thread::sleep(Duration::from_millis(1000));
     }
 
     // Terminate the reader thread
     pub fn udp_close(&mut self) { 
         
-        // Stop the hardware
-        self.i_hw_control.do_stop();
-        thread::sleep(Duration::from_millis(10000));
-        println!("Hardware stopped");
         match &mut self.opt_reader_join_handle {
             Some(join_thrd) => {
+                self.r_sender.send(messages::ReaderMsg::StopListening).unwrap();
+                thread::sleep(Duration::from_millis(1000));
                 self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
                 println!("Waiting for reader to terminate...");
                 while join_thrd.is_finished() == false {
-                    thread::sleep(Duration::from_millis(1000));
+                    thread::sleep(Duration::from_millis(100));
                 } 
                 println!("Reader terminated");
             },
             None => (),
         }
+
+        // Stop the hardware
+        self.i_hw_control.do_stop();
+        thread::sleep(Duration::from_millis(10000));
+        println!("\nHardware stopped");
+       
         thread::sleep(Duration::from_millis(10000));
     }
 }

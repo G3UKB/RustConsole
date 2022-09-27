@@ -46,9 +46,10 @@ fn main() {
     i_udp.udp_init();
 
     // Temporary code to wait a while then close everything and exit
-    thread::sleep(Duration::from_millis(5000));
-    println!("Rust console closing...");
+    thread::sleep(Duration::from_millis(10000));
+    println!("\nStarting shutdown...");
     i_udp.udp_close();
+
+    println!("\nRust console closing...");
     thread::sleep(Duration::from_millis(1000));
-    
 }
