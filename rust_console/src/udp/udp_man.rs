@@ -138,7 +138,8 @@ impl UDPdata {
                 println!("Waiting for reader to terminate...");
                 while join_thrd.is_finished() == false {
                     thread::sleep(Duration::from_millis(100));
-                } 
+                }
+                //join_thrd.join(); 
                 println!("Reader terminated");
             },
             None => (),
