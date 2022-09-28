@@ -25,6 +25,8 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
+use std::collections::VecDeque;
+
 use crate::common::common_defs;
 
 pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [u8; common_defs::PROT_SZ as usize * 2]) {
@@ -51,6 +53,8 @@ pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [
 	// at 2 we take every 2nd block
 	// at 4 we take every 4th block
 	// at 8 we take every 8th block
+
+	let deque: VecDeque<u8> = VecDeque::with_capacity(10000);
 
 	// Current state
 	const IQ: u32 = 0;
