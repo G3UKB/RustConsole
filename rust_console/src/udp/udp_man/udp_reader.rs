@@ -43,8 +43,8 @@ use crate::common::messages;
 pub struct UDPRData<'a>{
     receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
 	p_sock :  &'a socket2::Socket,
-    udp_frame : [MaybeUninit<u8>; common_defs::FRAME_SZ],
-    prot_frame : [u8; common_defs::PROT_SZ*2],
+    udp_frame : [MaybeUninit<u8>; common_defs::FRAME_SZ as usize],
+    prot_frame : [u8; common_defs::PROT_SZ as usize *2],
     //pub i_cc: protocol::cc_in::CCDataMutex,
     pub i_seq: protocol::seq_in::SeqData,
     listen: bool,
@@ -62,8 +62,8 @@ impl UDPRData<'_> {
 		UDPRData {
             receiver: receiver,
 			p_sock: p_sock,
-            udp_frame: [MaybeUninit::uninit(); common_defs::FRAME_SZ],
-            prot_frame: [0; common_defs::PROT_SZ*2],
+            udp_frame: [MaybeUninit::uninit(); common_defs::FRAME_SZ as usize],
+            prot_frame: [0; common_defs::PROT_SZ as usize *2],
             //i_cc: i_cc,
             i_seq: i_seq,
             listen: false,
@@ -98,7 +98,7 @@ impl UDPRData<'_> {
                 match r {
                     Ok((sz,_addr)) => {
                         //println!("Received {:?} data bytes", sz);
-                        if sz == common_defs::FRAME_SZ {
+                        if sz == common_defs::FRAME_SZ as usize {
                             self.split_frame();
                         } else {
                             println!("Received incomplete frame {}, discarding!", sz);

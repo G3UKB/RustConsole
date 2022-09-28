@@ -35,8 +35,8 @@ use crate::protocol;
 pub struct UDPWData{
 	p_sock : Arc<socket2::Socket>,
     p_addr : Arc<socket2::SockAddr>,
-    udp_frame : [u8; common_defs::FRAME_SZ],
-    prot_frame : [u8; common_defs::PROT_SZ*2],
+    udp_frame : [u8; common_defs::FRAME_SZ as usize],
+    prot_frame : [u8; common_defs::PROT_SZ as usize*2],
     pub i_cc: protocol::cc_out::CCDataMutex,
     pub i_seq: protocol::seq_out::SeqData,
 }
@@ -53,8 +53,8 @@ impl UDPWData {
 		UDPWData {
 			p_sock: p_sock,
             p_addr: p_addr,
-            udp_frame: [0; common_defs::FRAME_SZ],
-            prot_frame: [0; common_defs::PROT_SZ*2],
+            udp_frame: [0; common_defs::FRAME_SZ as usize],
+            prot_frame: [0; common_defs::PROT_SZ as usize *2],
             i_cc: i_cc,
             i_seq: i_seq,
 		}

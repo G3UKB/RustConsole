@@ -26,9 +26,13 @@ bob@bobcowdery.plus.com
 */
 
 // UDP frame sz
-pub const FRAME_SZ : usize = 1032;
+pub const FRAME_SZ : u32 = 1032;
 // Protocal packet sz (2 per UDP frame)
-pub const PROT_SZ : usize = 504;
+pub const PROT_SZ : u32 = 504;
+// Max IQ samples array sz
+pub const IQ_ARR_SZ : u32 = NUM_SMPLS_1_RADIO * MAX_RADIOS * BYTES_PER_SAMPLE;
+// This is temporary as we don't have the actual size yet
+pub const MIC_ARR_SZ : u32 = IQ_ARR_SZ;
 
 // Protocol fields
 pub const EP2 : u8 = 0x02;
@@ -59,3 +63,8 @@ pub const NUM_SMPLS_3_RADIO : u32 = 50;
 pub const SMPLS_48K : u32 = 48000;
 pub const SMPLS_96K : u32 = 96000;
 pub const SMPLS_192K : u32 = 192000;
+pub const SMPLS_384K : u32 = 384000;
+
+// Misc
+pub const MAX_RADIOS : u32 = 3;
+pub const BYTES_PER_SAMPLE : u32 = 6;   // 2*24 bits

@@ -48,8 +48,8 @@ use crate::protocol;
 */
 pub fn encode(  i_seq: &mut protocol::seq_out::SeqData, 
                 i_cc: &mut protocol::cc_out::CCDataMutex, 
-                udp_frame: &mut [u8; FRAME_SZ], 
-                prot_frame: &mut [u8; PROT_SZ*2]) {
+                udp_frame: &mut [u8; FRAME_SZ as usize], 
+                prot_frame: &mut [u8; PROT_SZ as usize *2]) {
 
     // Encode header
     udp_frame[0] = 0xef;
@@ -97,7 +97,7 @@ pub fn encode(  i_seq: &mut protocol::seq_out::SeqData,
         j = j+1;
     }
     // Frame data
-    j = PROT_SZ;
+    j = PROT_SZ as usize;
     for i in START_FRAME_2..END_FRAME_2 {
         //println!("{}", i);
         udp_frame[i as usize] = prot_frame[j];
