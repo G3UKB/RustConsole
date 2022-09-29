@@ -129,22 +129,7 @@ impl UDPdata {
 
     // Terminate the reader thread
     pub fn udp_close(&mut self) { 
-        /* 
-        match &mut self.opt_reader_join_handle {
-            Some(join_thrd) => {
-                self.r_sender.send(messages::ReaderMsg::StopListening).unwrap();
-                thread::sleep(Duration::from_millis(1000));
-                self.r_sender.send(messages::ReaderMsg::Terminate).unwrap();
-                println!("Waiting for reader to terminate...");
-                //while join_thrd.is_finished() == false {
-                //    thread::sleep(Duration::from_millis(100));
-                //}
-                //h.join();
-                println!("Reader terminated");
-            },
-             None => (),
-        } 
-        */
+        
         if let Some(h) = self.opt_reader_join_handle.take(){
             self.r_sender.send(messages::ReaderMsg::StopListening).unwrap();
             thread::sleep(Duration::from_millis(1000));
