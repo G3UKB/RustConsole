@@ -140,7 +140,7 @@ pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [
 	for i in 0..in_sz {
 		if state == IQ {
 			// Processing IQ bytes
-			if total_iq_bytes_ct >= 0 {
+			if total_iq_bytes_ct > 0 {
 				iq[iq_index] = udp_frame[i as usize];
 				iq_index += 1;
 				total_iq_bytes_ct -= 1;
@@ -154,7 +154,7 @@ pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [
 			}
 		} else if state == MIC {
 			// Processing Mic bytes
-			if total_mic_bytes_ct >= 0 {
+			if total_mic_bytes_ct > 0 {
 				mic[mic_index] = udp_frame[i as usize];
 				mic_index += 1;
 				total_mic_bytes_ct -= 1;
